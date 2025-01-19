@@ -1,23 +1,31 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.service;
 
-import com.brandyodhiambo.bibleApi.exception.AppException;
-import com.brandyodhiambo.bibleApi.exception.BadRequestException;
+import com.brandyodhiambo.bibleApi.exception.*;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.Role;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.User;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserPrincipal;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginRequestDto;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.RoleRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
+import com.brandyodhiambo.bibleApi.security.jwt.JwtUtils;
+import com.brandyodhiambo.bibleApi.security.service.UserDetailsImpl;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.RoleName;
-import com.sun.security.auth.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -30,6 +38,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    JwtUtils jwtUtil;
+
+    @Autowired
+    AuthenticationManager authenticationManager;
 
     @Override
     public Boolean checkUsernameAvailability(String username) {
@@ -80,14 +94,14 @@ public class UserServiceImpl implements UserService {
                     Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
                             .orElseThrow(() -> new AppException("Error: Role is not found."));
                     roles.add(adminRole);
-                } else if (role.equals("mod")) {
-                    Role modRole = roleRepository.findByName(RoleName.ROLE_GROUP_LEADER)
+                } else if (role.equals("leader")) {
+                    Role leaderRole = roleRepository.findByName(RoleName.ROLE_GROUP_LEADER)
                             .orElseThrow(() -> new AppException("Error: Role is not found."));
-                    roles.add(modRole);
+                    roles.add(leaderRole);
                 } else {
-                    Role userRole = roleRepository.findByName(RoleName.ROLE_MEMBER)
+                    Role memberRole = roleRepository.findByName(RoleName.ROLE_MEMBER)
                             .orElseThrow(() -> new AppException("Error: Role is not found."));
-                    roles.add(userRole);
+                    roles.add(memberRole);
                 }
             });
         }
@@ -96,32 +110,122 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(User newUser, String username, UserPrincipal currentUser) {
-        return null;
+    public LoginResponseDto signIn(LoginRequestDto loginRequestDto) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtil.generateJwtToken(authentication);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        LoginResponseDto loginResponseDto = new LoginResponseDto(jwt,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                roles);
+
+        return loginResponseDto;
     }
+
+
+    @Override
+    public User updateUser(User newUser, String username, UserPrincipal currentUser) {
+        User user = userRepository.getUserByName(username);
+
+        // Check if the current user is an admin
+        boolean isAdmin = currentUser.getAuthorities()
+                .contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()));
+
+        // Check if the current user is updating their own profile
+        boolean isSelf = user.getId().equals(currentUser.getId());
+
+        // Check if the current user is a group leader
+        boolean isGroupLeader = currentUser.getAuthorities()
+                .contains(new SimpleGrantedAuthority(RoleName.ROLE_GROUP_LEADER.toString()));
+
+        // If the current user is a group leader, ensure they manage the user's group
+        //boolean canGroupLeaderEdit = isGroupLeader && groupRepository.isUserInGroupManagedByLeader(user.getId(), currentUser.getId());
+
+        if (isAdmin || isSelf /*|| canGroupLeaderEdit*/) {
+            user.setFirstName(newUser.getFirstName());
+            user.setLastName(newUser.getLastName());
+            user.setEmail(newUser.getEmail());
+            user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+            return userRepository.save(user);
+        }
+        ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to update profile of: " + username);
+        throw new UnauthorizedException(apiResponse);
+    }
+
 
     @Override
     public ApiResponse deleteUser(String username, UserPrincipal currentUser) {
-        return null;
+        User user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", username));
+        if (!user.getId().equals(currentUser.getId()) || !currentUser.getAuthorities()
+                .contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
+            ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to delete profile of: " + username);
+            throw new AccessDeniedException(apiResponse);
+        }
+
+        userRepository.deleteById(user.getId());
+
+        return new ApiResponse(Boolean.TRUE, "You successfully deleted profile of: " + username);
     }
 
     @Override
     public ApiResponse giveAdmin(String username) {
-        return null;
+        User user = userRepository.getUserByName(username);
+        List<Role> roles = new ArrayList<>();
+        roles.add(roleRepository.findByName(RoleName.ROLE_ADMIN)
+                .orElseThrow(() -> new AppException("User role not set")));
+        roles.add(roleRepository.findByName(RoleName.ROLE_GROUP_LEADER)
+                .orElseThrow(() -> new AppException("User role not set")));
+        roles.add(
+                roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));
+        user.setRole(roles);
+        userRepository.save(user);
+        return new ApiResponse(Boolean.TRUE, "You gave ADMIN role to user: " + username);
     }
 
     @Override
     public ApiResponse removeAdmin(String username) {
-        return null;
+        User user = userRepository.getUserByName(username);
+        List<Role> roles = new ArrayList<>();
+        roles.add(
+                roleRepository.findByName(RoleName.ROLE_GROUP_LEADER).orElseThrow(() -> new AppException("User role not set")));
+        roles.add(
+                roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));
+        user.setRole(roles);
+        userRepository.save(user);
+        return new ApiResponse(Boolean.TRUE, "You took ADMIN role from user: " + username);
     }
 
     @Override
     public ApiResponse giveGroupLeader(String username) {
-        return null;
+        User user = userRepository.getUserByName(username);
+        List<Role> roles = new ArrayList<>();
+        roles.add(
+                roleRepository.findByName(RoleName.ROLE_GROUP_LEADER).orElseThrow(() -> new AppException("User role not set")));
+        roles.add(
+                roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));
+        user.setRole(roles);
+        userRepository.save(user);
+        return new ApiResponse(Boolean.TRUE, "You give group leader role to user: " + username);
     }
 
     @Override
     public ApiResponse removeGroupLeader(String username) {
-        return null;
+        User user = userRepository.getUserByName(username);
+        List<Role> roles = new ArrayList<>();
+        roles.add(
+                roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));
+        user.setRole(roles);
+        userRepository.save(user);
+        return new ApiResponse(Boolean.TRUE, "You took group leader role from user: " + username);
     }
 }

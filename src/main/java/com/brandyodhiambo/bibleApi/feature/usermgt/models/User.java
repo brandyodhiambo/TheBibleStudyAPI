@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public class User {
     @Id
-    private String id;
+    private Long id;
 
     @Column(columnDefinition = "TEXT")
     private String firstName;
@@ -44,11 +44,11 @@ public class User {
         this.profilePicture = profilePicture;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

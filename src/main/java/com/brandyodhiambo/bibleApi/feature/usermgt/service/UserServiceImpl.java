@@ -14,17 +14,18 @@ import com.brandyodhiambo.bibleApi.security.service.UserDetailsImpl;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.RoleName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -111,10 +112,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginResponseDto signIn(LoginRequestDto loginRequestDto) {
+        String identifier = loginRequestDto.getUsername(); // This can be a username or an email
+        String password = loginRequestDto.getPassword();
+
+        boolean isEmail = identifier.contains("@");
+        Optional<User> user = isEmail
+                ? userRepository.findUserByEmail(identifier)
+                : userRepository.findUserByUsername(identifier);
+
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("User not found with " + (isEmail ? "email: " : "username: ") + identifier);
+        }
+
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
+                new UsernamePasswordAuthenticationToken(user.get().getUsername(), password)
+        );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         String jwt = jwtUtil.generateJwtToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -122,14 +137,15 @@ public class UserServiceImpl implements UserService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto(jwt,
+        return new LoginResponseDto(
+                jwt,
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
-                roles);
-
-        return loginResponseDto;
+                roles
+        );
     }
+
 
 
     @Override

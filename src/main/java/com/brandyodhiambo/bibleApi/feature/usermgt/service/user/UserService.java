@@ -1,4 +1,4 @@
-package com.brandyodhiambo.bibleApi.feature.usermgt.service;
+package com.brandyodhiambo.bibleApi.feature.usermgt.service.user;
 
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.User;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserPrincipal;

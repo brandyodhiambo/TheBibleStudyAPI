@@ -9,7 +9,8 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.repository.RoleRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.service.confirmationToken.ConfirmationTokenService;
 import com.brandyodhiambo.bibleApi.security.jwt.JwtUtils;
-import com.brandyodhiambo.bibleApi.security.service.UserDetailsImpl;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
+import com.brandyodhiambo.bibleApi.security.service.JwtService;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,10 +22,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +43,9 @@ public class UserServiceImpl implements UserService {
     JwtUtils jwtUtil;
 
     @Autowired
+    JwtService jwtService;
+
+    @Autowired
     AuthenticationManager authenticationManager;
 
     @Autowired
@@ -50,21 +53,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean checkUsernameAvailability(String username) {
-        return userRepository.existByEmail(username);
+        return userRepository.existsByUsername(username);
     }
 
     @Override
     public Boolean checkEmailAvailability(String email) {
-        return userRepository.existByEmail(email);
+        return userRepository.existsByEmail(email);
     }
 
     @Override
-    public User getUser(String username) {
+    public UserDetailsImpl getUser(String username) {
         return userRepository.getUserByName(username);
     }
 
     @Override
-    public User signUp(SignUpRequestDto signUpRequestDto) {
+    public UserDetailsImpl signUp(SignUpRequestDto signUpRequestDto) {
         if (!checkEmailAvailability(signUpRequestDto.getEmail())) {
             throw new BadRequestException(new ApiResponse(Boolean.FALSE, "Email is already taken"));
         }
@@ -73,12 +76,14 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException(new ApiResponse(Boolean.FALSE, "Username is already taken"));
         }
 
-        User user = new User(
+        UserDetailsImpl user = new UserDetailsImpl(
                 signUpRequestDto.getFirstName(),
                 signUpRequestDto.getLastName(),
                 signUpRequestDto.getUsername(),
                 signUpRequestDto.getEmail(),
                 passwordEncoder.encode(signUpRequestDto.getPassword()),
+                LocalDate.now(),
+                LocalDate.now(),
                 signUpRequestDto.getProfilePicture()
         );
 
@@ -100,7 +105,7 @@ public class UserServiceImpl implements UserService {
         }
         user.setRole(roles);
 
-        User savedUser = userRepository.save(user);
+        UserDetailsImpl savedUser = userRepository.save(user);
 
         // Generate and save confirmation token
         String token = UUID.randomUUID().toString();
@@ -120,7 +125,7 @@ public class UserServiceImpl implements UserService {
         String password = loginRequestDto.getPassword();
 
         boolean isEmail = identifier.contains("@");
-        Optional<User> user = isEmail
+        Optional<UserDetailsImpl> user = isEmail
                 ? userRepository.findUserByEmail(identifier)
                 : userRepository.findUserByUsername(identifier);
 
@@ -146,15 +151,16 @@ public class UserServiceImpl implements UserService {
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
-                roles
+                roles,
+                jwtService.getExpirationTime()
         );
     }
 
 
 
     @Override
-    public User updateUser(User newUser, String username, UserPrincipal currentUser) {
-        User user = userRepository.getUserByName(username);
+    public UserDetailsImpl updateUser(UserDetailsImpl newUser, String username, UserPrincipal currentUser) {
+        UserDetailsImpl user = userRepository.getUserByName(username);
 
         // Check if the current user is an admin
         boolean isAdmin = currentUser.getAuthorities()
@@ -184,7 +190,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse deleteUser(String username, UserPrincipal currentUser) {
-        User user = userRepository.findUserByUsername(username)
+        UserDetailsImpl user = userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", username));
         if (!user.getId().equals(currentUser.getId()) || !currentUser.getAuthorities()
                 .contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
@@ -199,7 +205,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse giveAdmin(String username) {
-        User user = userRepository.getUserByName(username);
+        UserDetailsImpl user = userRepository.getUserByName(username);
         List<Role> roles = new ArrayList<>();
         roles.add(roleRepository.findByName(RoleName.ROLE_ADMIN)
                 .orElseThrow(() -> new AppException("User role not set")));
@@ -214,7 +220,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse removeAdmin(String username) {
-        User user = userRepository.getUserByName(username);
+        UserDetailsImpl user = userRepository.getUserByName(username);
         List<Role> roles = new ArrayList<>();
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_LEADER).orElseThrow(() -> new AppException("User role not set")));
@@ -227,7 +233,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse giveGroupLeader(String username) {
-        User user = userRepository.getUserByName(username);
+        UserDetailsImpl user = userRepository.getUserByName(username);
         List<Role> roles = new ArrayList<>();
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_LEADER).orElseThrow(() -> new AppException("User role not set")));
@@ -240,7 +246,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse removeGroupLeader(String username) {
-        User user = userRepository.getUserByName(username);
+        UserDetailsImpl user = userRepository.getUserByName(username);
         List<Role> roles = new ArrayList<>();
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));

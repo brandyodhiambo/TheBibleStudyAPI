@@ -1,11 +1,11 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.controller;
 
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.User;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserPrincipal;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.service.user.UserService;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,13 +31,13 @@ public class UserController {
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<User> getUser(@PathVariable String username) {
+    public ResponseEntity<UserDetailsImpl> getUser(@PathVariable String username) {
         return ResponseEntity.ok(userService.getUser(username));
     }
 
     @PostMapping("/auth/signup")
-    public ResponseEntity<User> signUp(@RequestBody SignUpRequestDto signUpRequestDto) {
-        User user = userService.signUp(signUpRequestDto);
+    public ResponseEntity<UserDetailsImpl> signUp(@RequestBody SignUpRequestDto signUpRequestDto) {
+        UserDetailsImpl user = userService.signUp(signUpRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
@@ -47,16 +47,16 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{username}")
-    public ResponseEntity<User> updateUser(
+    @PutMapping("/update/user/{username}")
+    public ResponseEntity<UserDetailsImpl> updateUser(
             @PathVariable String username,
-            @RequestBody User updatedUser,
+            @RequestBody UserDetailsImpl updatedUser,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        User user = userService.updateUser(updatedUser, username, currentUser);
+        UserDetailsImpl user = userService.updateUser(updatedUser, username, currentUser);
         return ResponseEntity.ok(user);
     }
 
-    @DeleteMapping("/{username}")
+    @DeleteMapping("/delete/user/{username}")
     public ResponseEntity<ApiResponse> deleteUser(
             @PathVariable String username,
             @AuthenticationPrincipal UserPrincipal currentUser) {

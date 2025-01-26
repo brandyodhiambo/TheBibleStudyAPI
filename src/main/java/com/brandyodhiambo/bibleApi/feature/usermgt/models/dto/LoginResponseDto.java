@@ -10,14 +10,32 @@ public class LoginResponseDto {
     private String username;
     private String email;
     private List<String> role;
+    private long expiresIn;
 
-    public LoginResponseDto(String accesstoken, Long id, String username, String email, List<String> role) {
+    public LoginResponseDto(String accesstoken, Long id, String username, String email, List<String> role,Long expiresIn) {
         this.token = accesstoken;
         this.type = type;
         this.id = id;
         this.username = username;
         this.email = email;
         this.role = role;
+        this.expiresIn = expiresIn;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public long getExpiresIn() {
+        return expiresIn;
+    }
+
+    public void setExpiresIn(long expiresIn) {
+        this.expiresIn = expiresIn;
     }
 
     public String getAccessToken() {

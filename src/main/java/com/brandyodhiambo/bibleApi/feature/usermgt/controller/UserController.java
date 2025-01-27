@@ -10,6 +10,7 @@ import com.brandyodhiambo.bibleApi.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,13 +65,15 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{username}/admin")
+    @PostMapping("/{username}/giveAdmin")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse> giveAdmin(@PathVariable String username) {
         ApiResponse response = userService.giveAdmin(username);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{username}/admin")
+    @DeleteMapping("/{username}/removeAdmin")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse> removeAdmin(@PathVariable String username) {
         ApiResponse response = userService.removeAdmin(username);
         return ResponseEntity.ok(response);

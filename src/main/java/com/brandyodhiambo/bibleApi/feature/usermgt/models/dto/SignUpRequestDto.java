@@ -9,9 +9,6 @@ import java.util.List;
 @Data
 public class SignUpRequestDto {
 
-    @NotEmpty(message = "User id must be provided")
-    private String id;
-
     @NotEmpty(message = "User first name must be provided")
     private String firstName;
 
@@ -33,8 +30,7 @@ public class SignUpRequestDto {
     @NotEmpty(message = "User picture must be provided")
     private String profilePicture;
 
-    public SignUpRequestDto(String id, String firstName, String lastName, String username, String email, String password, List<Role> role, String profilePicture) {
-        this.id = id;
+    public SignUpRequestDto( String firstName, String lastName, String username, String email, String password, List<Role> role, String profilePicture) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
@@ -42,14 +38,6 @@ public class SignUpRequestDto {
         this.password = password;
         this.role = role;
         this.profilePicture = profilePicture;
-    }
-
-    public @NotEmpty(message = "User id must be provided") String getId() {
-        return id;
-    }
-
-    public void setId(@NotEmpty(message = "User id must be provided") String id) {
-        this.id = id;
     }
 
     public @NotEmpty(message = "User first name must be provided") String getFirstName() {

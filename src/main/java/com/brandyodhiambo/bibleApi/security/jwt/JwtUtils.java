@@ -1,7 +1,7 @@
 package com.brandyodhiambo.bibleApi.security.jwt;
 
 
-import com.brandyodhiambo.bibleApi.security.service.UserDetailsImpl;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

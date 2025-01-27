@@ -42,7 +42,8 @@ public class SecurityConfiguration {
                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/users/auth/**",
+                        .requestMatchers(
+                                "/api/v1/users/auth/**",
                                 "/swagger-ui/**",
                                 "/configuration/ui",
                                 "/swagger-resources/**",
@@ -54,8 +55,8 @@ public class SecurityConfiguration {
                         .anyRequest().authenticated()
 
                 )
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .authenticationProvider(authenticationProvider);
+               // .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

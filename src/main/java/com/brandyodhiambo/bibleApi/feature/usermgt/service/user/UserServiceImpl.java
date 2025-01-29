@@ -68,11 +68,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailsImpl signUp(SignUpRequestDto signUpRequestDto) {
-        if (!checkEmailAvailability(signUpRequestDto.getEmail())) {
+        if (checkEmailAvailability(signUpRequestDto.getEmail())) {
             throw new BadRequestException(new ApiResponse(Boolean.FALSE, "Email is already taken"));
         }
 
-        if (!checkUsernameAvailability(signUpRequestDto.getUsername())) {
+        if (checkUsernameAvailability(signUpRequestDto.getUsername())) {
             throw new BadRequestException(new ApiResponse(Boolean.FALSE, "Username is already taken"));
         }
 
@@ -97,8 +97,8 @@ public class UserServiceImpl implements UserService {
         } else {
             strRoles.forEach(role -> {
                 Role resolvedRole = roleRepository.findByName(
-                        role.equals("admin") ? RoleName.ROLE_ADMIN :
-                                role.equals("leader") ? RoleName.ROLE_LEADER : RoleName.ROLE_MEMBER
+                        role.equals("ROLE_ADMIN") ? RoleName.ROLE_ADMIN :
+                                role.equals("ROLE_LEADER") ? RoleName.ROLE_LEADER : RoleName.ROLE_MEMBER
                 ).orElseThrow(() -> new AppException("Error: Role is not found."));
                 roles.add(resolvedRole);
             });
@@ -113,7 +113,7 @@ public class UserServiceImpl implements UserService {
         confirmationTokenService.saveConfirmationToken(confirmationToken);
 
         // Send confirmation email
-        confirmationTokenService.sendEmailConfirmation(savedUser.getEmail(), token);
+       // confirmationTokenService.sendEmailConfirmation(savedUser.getEmail(), token);
 
         return savedUser;
     }

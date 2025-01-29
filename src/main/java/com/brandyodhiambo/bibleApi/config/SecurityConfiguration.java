@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
@@ -37,26 +38,25 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-               .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/v1/users/auth/**",
-                                "/swagger-ui/**",
-                                "/configuration/ui",
-                                "/swagger-resources/**",
-                                "/configuration/security",
-                                "/webjars/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html")
-                        .permitAll()
-                        .anyRequest().authenticated()
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers("/api/v1/users/auth/**").permitAll()
+                                .requestMatchers("/swagger-ui/**").permitAll()
+                                .requestMatchers("/configuration/ui").permitAll()
+                                .requestMatchers("/swagger-resources/**").permitAll()
+                                .requestMatchers("/configuration/security").permitAll()
+                                .requestMatchers("/webjars/**").permitAll()
+                                .requestMatchers("/v3/api-docs/**").permitAll()
+                                .requestMatchers("/swagger-ui.html").permitAll()
+                                .anyRequest().authenticated()
+                );
 
-                )
-                .authenticationProvider(authenticationProvider);
-               // .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.authenticationProvider(authenticationProvider);
+
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -9,10 +9,11 @@ public class LoginResponseDto {
     private Long id;
     private String username;
     private String email;
+    private String profilePic;
     private List<String> role;
     private long expiresIn;
 
-    public LoginResponseDto(String accesstoken, Long id, String username, String email, List<String> role,Long expiresIn) {
+    public LoginResponseDto(String accesstoken, Long id, String username, String email, List<String> role,Long expiresIn,String profilePic) {
         this.token = accesstoken;
         this.type = type;
         this.id = id;
@@ -20,6 +21,15 @@ public class LoginResponseDto {
         this.email = email;
         this.role = role;
         this.expiresIn = expiresIn;
+        this.profilePic = profilePic;
+    }
+
+    public String getProfilePic() {
+        return profilePic;
+    }
+
+    public void setProfilePic(String profilePic) {
+        this.profilePic = profilePic;
     }
 
     public String getToken() {

@@ -22,14 +22,14 @@ public class ConfirmationTokenServiceImpl implements ConfirmationTokenService{
     @Override
     public void sendEmailConfirmation(String recipientEmail, String token) {
         String subject = "Email Confirmation";
-        String confirmationUrl = "http://yourdomain.com/api/auth/confirm?token=" + token;
+        String confirmationUrl = "http://localhost:8005/api/auth/confirm?token=" + token;
         String message = "Please confirm your email by clicking the following link: " + confirmationUrl;
 
         SimpleMailMessage email = new SimpleMailMessage();
         email.setTo(recipientEmail);
         email.setSubject(subject);
         email.setText(message);
-        email.setFrom("your-email@gmail.com"); // Optional, defaults to configured email
+        email.setFrom("brandyodhiambo643@gmail.com");
 
         javaMailSender.send(email);
     }

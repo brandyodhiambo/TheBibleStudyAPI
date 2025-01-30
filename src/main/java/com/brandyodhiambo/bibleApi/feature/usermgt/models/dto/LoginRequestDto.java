@@ -1,20 +1,20 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.models.dto;
 
 public class LoginRequestDto {
-    private String username;
+    private String email;
     private String password;
 
-    public LoginRequestDto(String username, String password) {
-        this.username = username;
+    public LoginRequestDto(String email, String password) {
+        this.email = email;
         this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String username) {
+        this.email = username;
     }
 
     public String getPassword() {

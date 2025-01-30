@@ -12,6 +12,7 @@ import com.brandyodhiambo.bibleApi.security.jwt.JwtUtils;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
 import com.brandyodhiambo.bibleApi.security.service.JwtService;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,10 +20,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -76,6 +80,40 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException(new ApiResponse(Boolean.FALSE, "Username is already taken"));
         }
 
+        Set<String> strRoles = signUpRequestDto.getRole();
+        Set<Role> roles = new HashSet<>();
+
+        if (strRoles == null) {
+            Role userRole = roleRepository.findByName(RoleName.ROLE_MEMBER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+        } else {
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "admin":
+                        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
+
+                        break;
+                    case "leader":
+                        Role modRole = roleRepository.findByName(RoleName.ROLE_LEADER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(modRole);
+
+                        break;
+                    default:
+                        Role userRole = roleRepository.findByName(RoleName.ROLE_MEMBER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(userRole);
+                }
+            });
+        }
+
+        Set<GrantedAuthority> authorities = roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toSet());
+
         UserDetailsImpl user = new UserDetailsImpl(
                 signUpRequestDto.getFirstName(),
                 signUpRequestDto.getLastName(),
@@ -84,27 +122,11 @@ public class UserServiceImpl implements UserService {
                 passwordEncoder.encode(signUpRequestDto.getPassword()),
                 LocalDate.now(),
                 LocalDate.now(),
-                signUpRequestDto.getProfilePicture()
+                signUpRequestDto.getProfilePicture(),
+                authorities
         );
 
-        List<Role> strRoles = signUpRequestDto.getRole();
-        List<Role> roles = new ArrayList<>();
-
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(RoleName.ROLE_MEMBER)
-                    .orElseThrow(() -> new AppException("Error: Role is not found."));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                Role resolvedRole = roleRepository.findByName(
-                        role.equals("ROLE_ADMIN") ? RoleName.ROLE_ADMIN :
-                                role.equals("ROLE_LEADER") ? RoleName.ROLE_LEADER : RoleName.ROLE_MEMBER
-                ).orElseThrow(() -> new AppException("Error: Role is not found."));
-                roles.add(resolvedRole);
-            });
-        }
         user.setRole(roles);
-
         UserDetailsImpl savedUser = userRepository.save(user);
 
         // Generate and save confirmation token
@@ -121,29 +143,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginResponseDto signIn(LoginRequestDto loginRequestDto) {
-        String identifier = loginRequestDto.getUsername(); // This can be a username or an email
-        String password = loginRequestDto.getPassword();
-
-        boolean isEmail = identifier.contains("@");
-        Optional<UserDetailsImpl> user = isEmail
-                ? userRepository.findUserByEmail(identifier)
-                : userRepository.findUserByUsername(identifier);
+        String email = loginRequestDto.getEmail();
+        Optional<UserDetailsImpl> user = userRepository.findUserByEmail(email);
 
         if (user.isEmpty()) {
-            throw new UsernameNotFoundException("User not found with " + (isEmail ? "email: " : "username: ") + identifier);
+            throw new UsernameNotFoundException("User with email: " + email + " is not found");
         }
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.get().getUsername(), password)
+                new UsernamePasswordAuthenticationToken(email, loginRequestDto.getPassword())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
         String jwt = jwtUtil.generateJwtToken(authentication);
+
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
+                .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
         return new LoginResponseDto(
@@ -152,9 +169,11 @@ public class UserServiceImpl implements UserService {
                 userDetails.getUsername(),
                 userDetails.getEmail(),
                 roles,
-                jwtService.getExpirationTime()
+                jwtService.getExpirationTime(),
+                userDetails.getProfilePicture()
         );
     }
+
 
 
 
@@ -206,7 +225,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse giveAdmin(String username) {
         UserDetailsImpl user = userRepository.getUserByName(username);
-        List<Role> roles = new ArrayList<>();
+        Set<Role> roles = new HashSet<>();
         roles.add(roleRepository.findByName(RoleName.ROLE_ADMIN)
                 .orElseThrow(() -> new AppException("User role not set")));
         roles.add(roleRepository.findByName(RoleName.ROLE_LEADER)
@@ -221,7 +240,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse removeAdmin(String username) {
         UserDetailsImpl user = userRepository.getUserByName(username);
-        List<Role> roles = new ArrayList<>();
+        Set<Role> roles = new HashSet<>();
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_LEADER).orElseThrow(() -> new AppException("User role not set")));
         roles.add(
@@ -234,7 +253,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse giveGroupLeader(String username) {
         UserDetailsImpl user = userRepository.getUserByName(username);
-        List<Role> roles = new ArrayList<>();
+        Set<Role> roles = new HashSet<>();
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_LEADER).orElseThrow(() -> new AppException("User role not set")));
         roles.add(
@@ -247,11 +266,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse removeGroupLeader(String username) {
         UserDetailsImpl user = userRepository.getUserByName(username);
-        List<Role> roles = new ArrayList<>();
+        Set<Role> roles = new HashSet<>();
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));
         user.setRole(roles);
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You took group leader role from user: " + username);
+    }
+
+
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        UserDetailsImpl user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        return UserDetailsImpl.build(user);
     }
 }

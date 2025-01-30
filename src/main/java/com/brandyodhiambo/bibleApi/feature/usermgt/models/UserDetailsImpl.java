@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 public class UserDetailsImpl implements UserDetails {
@@ -46,12 +48,18 @@ public class UserDetailsImpl implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private List<Role> role  = new ArrayList<>();
+    private Set<Role>role = new HashSet<>();
 
     @Column(columnDefinition = "TEXT")
     private String profilePicture;
 
-    public UserDetailsImpl(String firstName, String lastName, String username, String email, String password, LocalDate createdAt, LocalDate updatedAt,String profilePicture) {
+    private Collection<? extends GrantedAuthority> authorities;
+
+    public UserDetailsImpl(){
+
+    }
+
+    public UserDetailsImpl(String firstName, String lastName, String username, String email, String password, LocalDate createdAt, LocalDate updatedAt,String profilePicture, Collection<? extends GrantedAuthority> authorities) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
@@ -60,13 +68,30 @@ public class UserDetailsImpl implements UserDetails {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.profilePicture = profilePicture;
+        this.authorities = authorities;
     }
 
 
+    public static UserDetailsImpl build(UserDetailsImpl user) {
+        List<GrantedAuthority> authorities = user.getRole().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toList());
+
+        return new UserDetailsImpl(
+                user.getFirstName(),
+                user.getLastName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPassword(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getProfilePicture(),
+                authorities);
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return authorities;
     }
 
 
@@ -120,11 +145,11 @@ public class UserDetailsImpl implements UserDetails {
         this.password = password;
     }
 
-    public List<Role> getRole() {
+    public Set<Role> getRole() {
         return role;
     }
 
-    public void setRole(List<Role> role) {
+    public void setRole(Set<Role> role) {
         this.role = role;
     }
 

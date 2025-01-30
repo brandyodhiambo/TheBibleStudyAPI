@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class SignUpRequestDto {
@@ -25,12 +26,12 @@ public class SignUpRequestDto {
     private String password;
 
     @NotEmpty(message = "User role must be provided")
-    private List<Role> role;
+    private Set<String> role;
 
     @NotEmpty(message = "User picture must be provided")
     private String profilePicture;
 
-    public SignUpRequestDto( String firstName, String lastName, String username, String email, String password, List<Role> role, String profilePicture) {
+    public SignUpRequestDto( String firstName, String lastName, String username, String email, String password, Set<String> role, String profilePicture) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
@@ -80,11 +81,11 @@ public class SignUpRequestDto {
         this.password = password;
     }
 
-    public @NotEmpty(message = "User role must be provided") List<Role> getRole() {
+    public @NotEmpty(message = "User role must be provided") Set<String> getRole() {
         return role;
     }
 
-    public void setRole(@NotEmpty(message = "User role must be provided") List<Role> role) {
+    public void setRole(@NotEmpty(message = "User role must be provided") Set<String> role) {
         this.role = role;
     }
 

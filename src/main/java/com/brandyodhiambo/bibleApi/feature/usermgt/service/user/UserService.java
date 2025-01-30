@@ -6,6 +6,7 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public interface UserService {
 
@@ -29,5 +30,7 @@ public interface UserService {
     ApiResponse giveGroupLeader(String username);
 
     ApiResponse removeGroupLeader(String username);
+
+    public UserDetails loadUserByUsername(String email);
 
 }

@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
@@ -37,13 +39,13 @@ public class UserController {
     }
 
     @PostMapping("/auth/signup")
-    public ResponseEntity<UserDetailsImpl> signUp(@RequestBody SignUpRequestDto signUpRequestDto) {
+    public ResponseEntity<UserDetailsImpl> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
         UserDetailsImpl user = userService.signUp(signUpRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @PostMapping("/auth/signin")
-    public ResponseEntity<LoginResponseDto> signIn(@RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<LoginResponseDto> signIn(@Valid @RequestBody LoginRequestDto loginRequestDto) {
         LoginResponseDto response = userService.signIn(loginRequestDto);
         return ResponseEntity.ok(response);
     }

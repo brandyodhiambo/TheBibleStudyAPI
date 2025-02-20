@@ -7,14 +7,16 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
+@Service
 public interface UserService {
 
     Boolean checkUsernameAvailability(String username);
 
     Boolean checkEmailAvailability(String email);
 
-    UserDetailsImpl getUser(String username);
+    UserDetailsImpl getUser(String email);
 
     UserDetailsImpl signUp(SignUpRequestDto signUpRequestDto);
     LoginResponseDto signIn(LoginRequestDto loginRequestDto);
@@ -30,7 +32,6 @@ public interface UserService {
     ApiResponse giveGroupLeader(String username);
 
     ApiResponse removeGroupLeader(String username);
-
-    public UserDetails loadUserByUsername(String email);
+    void save(UserDetailsImpl user);
 
 }

@@ -34,20 +34,8 @@ public class UserController {
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<UserDetailsImpl> getUser(@PathVariable String username) {
-        return ResponseEntity.ok(userService.getUser(username));
-    }
-
-    @PostMapping("/auth/signup")
-    public ResponseEntity<UserDetailsImpl> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
-        UserDetailsImpl user = userService.signUp(signUpRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
-    }
-
-    @PostMapping("/auth/signin")
-    public ResponseEntity<LoginResponseDto> signIn(@Valid @RequestBody LoginRequestDto loginRequestDto) {
-        LoginResponseDto response = userService.signIn(loginRequestDto);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<UserDetailsImpl> getUser(@PathVariable String email) {
+        return ResponseEntity.ok(userService.getUser(email));
     }
 
     @PutMapping("/update/user/{username}")

@@ -1,3 +1,4 @@
+/*
 package com.brandyodhiambo.bibleApi.config;
 
 import com.brandyodhiambo.bibleApi.security.jwt.AuthEntryPointJwt;
@@ -43,7 +44,7 @@ public class SecurityConfiguration {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/v1/users/auth/**").permitAll()
+                        auth.requestMatchers("/api/v1/auth/**").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()
                                 .requestMatchers("/configuration/ui").permitAll()
                                 .requestMatchers("/swagger-resources/**").permitAll()
@@ -75,3 +76,4 @@ public class SecurityConfiguration {
         return source;
     }
 }
+*/

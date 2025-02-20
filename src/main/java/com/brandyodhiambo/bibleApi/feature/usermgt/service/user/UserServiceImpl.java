@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -31,7 +32,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service
+@Component
 public class UserServiceImpl implements UserService {
 
     @Autowired
@@ -42,9 +43,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    JwtUtils jwtUtil;
 
     @Autowired
     JwtService jwtService;
@@ -66,8 +64,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDetailsImpl getUser(String username) {
-        return userRepository.getUserByName(username);
+    public UserDetailsImpl getUser(String email) {
+        return userRepository.getUserByName(email);
     }
 
     @Override
@@ -144,18 +142,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public LoginResponseDto signIn(LoginRequestDto loginRequestDto) {
         String email = loginRequestDto.getEmail();
-        Optional<UserDetailsImpl> user = userRepository.findUserByEmail(email);
+        Optional<UserDetailsImpl> optionalUser = userRepository.findUserByEmail(email);
 
-        if (user.isEmpty()) {
-            throw new UsernameNotFoundException("User with email: " + email + " is not found");
-        }
+        UserDetailsImpl user = optionalUser.orElseThrow(
+                () -> new UsernameNotFoundException("User with email: " + email + " is not found")
+        );
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, loginRequestDto.getPassword())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtil.generateJwtToken(authentication);
+        String jwt = jwtService.generateToken(user);
 
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -163,8 +161,10 @@ public class UserServiceImpl implements UserService {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+
         return new LoginResponseDto(
                 jwt,
+                "Bearer",
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
@@ -274,12 +274,8 @@ public class UserServiceImpl implements UserService {
         return new ApiResponse(Boolean.TRUE, "You took group leader role from user: " + username);
     }
 
-
     @Override
-    @Transactional
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserDetailsImpl user = userRepository.findUserByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-        return UserDetailsImpl.build(user);
+    public void save(UserDetailsImpl user) {
+        userRepository.save(user);
     }
 }

@@ -1,3 +1,4 @@
+/*
 package com.brandyodhiambo.bibleApi.config;
 
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
@@ -45,3 +46,4 @@ public class ApplicationConfiguration {
         return authProvider;
     }
 }
+*/

@@ -20,9 +20,9 @@ public interface UserRepository extends JpaRepository<UserDetailsImpl,Long> {
 
     Optional<UserDetailsImpl> findByUsernameOrEmail(String username, String email);
 
-    default UserDetailsImpl getUserByName(String username) {
-        return findUserByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+    default UserDetailsImpl getUserByName(String email) {
+        return findUserByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
     }
 
 }

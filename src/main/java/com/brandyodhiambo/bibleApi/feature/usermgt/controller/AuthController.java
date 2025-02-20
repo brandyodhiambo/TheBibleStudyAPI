@@ -1,6 +1,6 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.controller;
 
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
@@ -22,8 +22,8 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDetailsImpl> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
-        UserDetailsImpl user = userService.signUp(signUpRequestDto);
+    public ResponseEntity<Users> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
+        Users user = userService.signUp(signUpRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 

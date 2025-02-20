@@ -14,12 +14,12 @@ public class ConfirmationToken {
 
     @OneToOne
     @JoinColumn(nullable = false, name = "user_id")
-    private UserDetailsImpl user;
+    private Users user;
 
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
 
-    public ConfirmationToken(String token, UserDetailsImpl user) {
+    public ConfirmationToken(String token, Users user) {
         this.token = token;
         this.user = user;
         this.createdAt = LocalDateTime.now();
@@ -34,11 +34,11 @@ public class ConfirmationToken {
         this.token = token;
     }
 
-    public UserDetailsImpl getUser() {
+    public Users getUser() {
         return user;
     }
 
-    public void setUser(UserDetailsImpl user) {
+    public void setUser(Users user) {
         this.user = user;
     }
 

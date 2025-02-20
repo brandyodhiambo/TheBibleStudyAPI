@@ -1,5 +1,6 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -12,7 +13,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
-public class UserDetailsImpl implements UserDetails {
+@Table(name = "users")
+public class Users implements UserDetails {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -48,6 +50,7 @@ public class UserDetailsImpl implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+    @JsonIgnore
     private Set<Role>role = new HashSet<>();
 
     @Column(columnDefinition = "TEXT")
@@ -55,11 +58,11 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(){
+    public Users(){
 
     }
 
-    public UserDetailsImpl(String firstName, String lastName, String username, String email, String password, LocalDate createdAt, LocalDate updatedAt,String profilePicture, Collection<? extends GrantedAuthority> authorities) {
+    public Users(String firstName, String lastName, String username, String email, String password, LocalDate createdAt, LocalDate updatedAt, String profilePicture, Collection<? extends GrantedAuthority> authorities) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
@@ -72,12 +75,12 @@ public class UserDetailsImpl implements UserDetails {
     }
 
 
-    public static UserDetailsImpl build(UserDetailsImpl user) {
+    public static Users build(Users user) {
         List<GrantedAuthority> authorities = user.getRole().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toList());
 
-        return new UserDetailsImpl(
+        return new Users(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getUsername(),
@@ -199,7 +202,7 @@ public class UserDetailsImpl implements UserDetails {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        UserDetailsImpl user = (UserDetailsImpl) o;
+        Users user = (Users) o;
         return Objects.equals(id, user.id);
     }
 }

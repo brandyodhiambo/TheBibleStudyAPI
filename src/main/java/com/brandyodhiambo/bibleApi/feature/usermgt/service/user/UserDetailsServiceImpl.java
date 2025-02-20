@@ -1,6 +1,6 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.service.user;
 
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +17,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserDetailsImpl user = userRepository.findUserByEmail(username)
+        Users user = userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
-        return UserDetailsImpl.build(user);
+        return Users.build(user);
     }
 }

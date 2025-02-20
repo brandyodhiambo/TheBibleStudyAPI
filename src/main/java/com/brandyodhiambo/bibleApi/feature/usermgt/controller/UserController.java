@@ -1,20 +1,16 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.controller;
 
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserPrincipal;
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginRequestDto;
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.service.user.UserService;
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -33,17 +29,18 @@ public class UserController {
         return ResponseEntity.ok(userService.checkEmailAvailability(email));
     }
 
-    @GetMapping("/{username}")
-    public ResponseEntity<UserDetailsImpl> getUser(@PathVariable String email) {
-        return ResponseEntity.ok(userService.getUser(email));
+    @GetMapping("/getUser")
+    public ResponseEntity<Users> getUser(@RequestParam String email) {
+        Users user = userService.getUser(email);
+        return ResponseEntity.ok(user);
     }
 
     @PutMapping("/update/user/{username}")
-    public ResponseEntity<UserDetailsImpl> updateUser(
+    public ResponseEntity<Users> updateUser(
             @PathVariable String username,
-            @RequestBody UserDetailsImpl updatedUser,
+            @RequestBody Users updatedUser,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        UserDetailsImpl user = userService.updateUser(updatedUser, username, currentUser);
+        Users user = userService.updateUser(updatedUser, username, currentUser);
         return ResponseEntity.ok(user);
     }
 

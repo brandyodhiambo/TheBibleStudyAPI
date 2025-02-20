@@ -4,10 +4,11 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserPrincipal;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserDetailsImpl;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public interface UserService {
@@ -16,12 +17,12 @@ public interface UserService {
 
     Boolean checkEmailAvailability(String email);
 
-    UserDetailsImpl getUser(String email);
+    Users getUser(String email);
 
-    UserDetailsImpl signUp(SignUpRequestDto signUpRequestDto);
+    Users signUp(SignUpRequestDto signUpRequestDto);
     LoginResponseDto signIn(LoginRequestDto loginRequestDto);
 
-    UserDetailsImpl updateUser(UserDetailsImpl newUser, String username, UserPrincipal currentUser);
+    Users updateUser(Users newUser, String username, UserPrincipal currentUser);
 
     ApiResponse deleteUser(String username, UserPrincipal currentUser);
 
@@ -32,6 +33,6 @@ public interface UserService {
     ApiResponse giveGroupLeader(String username);
 
     ApiResponse removeGroupLeader(String username);
-    void save(UserDetailsImpl user);
+    void save(Users user);
 
 }

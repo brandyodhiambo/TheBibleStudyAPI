@@ -66,13 +66,13 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{username}/group-leader")
+    @PostMapping("/{username}/give-group-leader")
     public ResponseEntity<ApiResponse> giveGroupLeader(@PathVariable String username) {
         ApiResponse response = userService.giveGroupLeader(username);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{username}/group-leader")
+    @DeleteMapping("/{username}/remove-group-leader")
     public ResponseEntity<ApiResponse> removeGroupLeader(@PathVariable String username) {
         ApiResponse response = userService.removeGroupLeader(username);
         return ResponseEntity.ok(response);

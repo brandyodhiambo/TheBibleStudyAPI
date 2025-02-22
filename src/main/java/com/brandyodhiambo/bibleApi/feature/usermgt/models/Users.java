@@ -37,6 +37,9 @@ public class Users implements UserDetails {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private boolean emailVerified;
+
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private LocalDate createdAt;
@@ -62,7 +65,7 @@ public class Users implements UserDetails {
 
     }
 
-    public Users(String firstName, String lastName, String username, String email, String password, LocalDate createdAt, LocalDate updatedAt, String profilePicture, Collection<? extends GrantedAuthority> authorities) {
+    public Users(String firstName, String lastName, String username, String email, String password, LocalDate createdAt, LocalDate updatedAt, String profilePicture, boolean emailVerified, Collection<? extends GrantedAuthority> authorities) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
@@ -71,6 +74,7 @@ public class Users implements UserDetails {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.profilePicture = profilePicture;
+        this.emailVerified = emailVerified;
         this.authorities = authorities;
     }
 
@@ -89,6 +93,7 @@ public class Users implements UserDetails {
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
                 user.getProfilePicture(),
+                user.isEmailVerified(),
                 authorities);
     }
 
@@ -204,5 +209,13 @@ public class Users implements UserDetails {
             return false;
         Users user = (Users) o;
         return Objects.equals(id, user.id);
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }

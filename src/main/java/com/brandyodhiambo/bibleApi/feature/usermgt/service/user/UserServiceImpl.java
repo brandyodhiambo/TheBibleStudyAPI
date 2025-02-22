@@ -7,7 +7,6 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.RoleRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
-import com.brandyodhiambo.bibleApi.feature.usermgt.service.confirmationToken.ConfirmationTokenService;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.security.service.JwtService;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
@@ -43,9 +42,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     AuthenticationManager authenticationManager;
-
-    @Autowired
-    ConfirmationTokenService confirmationTokenService;
 
     @Override
     public Boolean checkUsernameAvailability(String username) {
@@ -116,20 +112,12 @@ public class UserServiceImpl implements UserService {
                 LocalDate.now(),
                 LocalDate.now(),
                 signUpRequestDto.getProfilePicture(),
+                false,
                 authorities
         );
 
         user.setRole(roles);
         Users savedUser = userRepository.save(user);
-
-        // Generate and save confirmation token
-        String token = UUID.randomUUID().toString();
-        ConfirmationToken confirmationToken = new ConfirmationToken(token, savedUser);
-        confirmationTokenService.saveConfirmationToken(confirmationToken);
-
-        // Send confirmation email
-       // confirmationTokenService.sendEmailConfirmation(savedUser.getEmail(), token);
-
         return savedUser;
     }
 

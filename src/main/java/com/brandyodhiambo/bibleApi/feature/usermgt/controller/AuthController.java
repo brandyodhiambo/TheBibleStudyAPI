@@ -9,6 +9,8 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -21,6 +23,9 @@ public class AuthController {
 
     @Autowired
     private EmailVerificationService emailVerificationService;
+
+    @Autowired
+    JavaMailSender mailSender;
 
     @PostMapping("/signup")
     public ResponseEntity<Users> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
@@ -50,11 +55,22 @@ public class AuthController {
 
     @GetMapping("/email/verify")
     public ResponseEntity<Users> verifyEmail(
-            @RequestParam("uid") Long userId, @RequestParam("token") String token) {
+            @RequestParam("uid") Long userId,
+            @RequestParam("t") String token) {
 
         final var verifiedUser =
                 emailVerificationService.verifyEmail(userId, token);
 
         return ResponseEntity.ok(verifiedUser);
+    }
+
+    @GetMapping("/test-email")
+    public String testEmail() {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo("brandyariana99@gmail.com");
+        message.setSubject("Test Email");
+        message.setText("This is a test email from Spring Boot.");
+        mailSender.send(message);
+        return "Email sent!";
     }
 }

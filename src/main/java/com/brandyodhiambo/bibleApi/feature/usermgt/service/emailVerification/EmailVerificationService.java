@@ -30,23 +30,26 @@ public class EmailVerificationService {
 
     @Async
     public void sendVerificationToken(Long userId, String email) {
-        final var token = otpService.generateAndStoreOtp(userId);
+        try {
+            final var token = otpService.generateAndStoreOtp(userId);
+            final var emailVerificationUrl =
+                    "http://localhost:8005/api/auth/email/verify?uid=%s&t=%s".formatted(userId, token);
+            final var emailText = "Click the link to verify your email: " + emailVerificationUrl;
 
-        // Localhost URL with userId and OTP token
-        final var emailVerificationUrl =
-                "http://localhost:8005/api/auth/email/verify?uid=%s&t=%s"
-                        .formatted(userId, token);
-        final var emailText =
-                "Click the link to verify your email: " + emailVerificationUrl;
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("Email Verification");
+            message.setFrom("System");
+            message.setText(emailText);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Email Verification");
-        message.setFrom("System");
-        message.setText(emailText);
-
-        mailSender.send(message);
+            mailSender.send(message);
+            System.out.println("Email sent successfully to: " + email);
+        } catch (Exception e) {
+            System.err.println("Error sending email: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
+
 
     public void resendVerificationToken(String email) {
         Users user = userRepository.findUserByEmail(email)

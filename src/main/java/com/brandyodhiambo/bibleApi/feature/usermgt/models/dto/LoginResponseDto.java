@@ -13,7 +13,7 @@ public class LoginResponseDto {
     private List<String> role;
     private long expiresIn;
 
-    public LoginResponseDto(String accesstoken, Long id, String username, String email, List<String> role,Long expiresIn,String profilePic) {
+    public LoginResponseDto(String accesstoken, String type, Long id, String username, String email, List<String> role,Long expiresIn,String profilePic) {
         this.token = accesstoken;
         this.type = type;
         this.id = id;

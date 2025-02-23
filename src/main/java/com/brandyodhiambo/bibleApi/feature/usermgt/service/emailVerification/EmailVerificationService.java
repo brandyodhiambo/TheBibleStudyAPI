@@ -33,7 +33,7 @@ public class EmailVerificationService {
         try {
             final var token = otpService.generateAndStoreOtp(userId);
             final var emailVerificationUrl =
-                    "http://localhost:8005/api/auth/email/verify?uid=%s&t=%s".formatted(userId, token);
+                    "http://localhost:8005/api/v1/auth/email/verify?uid=%s&t=%s".formatted(userId, token);
             final var emailText = "Click the link to verify your email: " + emailVerificationUrl;
 
             SimpleMailMessage message = new SimpleMailMessage();
@@ -51,11 +51,11 @@ public class EmailVerificationService {
     }
 
 
-    public void resendVerificationToken(String email) {
-        Users user = userRepository.findUserByEmail(email)
+    public void resendVerificationToken(String username) {
+        Users user = userRepository.findUserByUsername(username)
                 .filter(u -> !u.isEmailVerified())
                 .orElseThrow(() -> new ResponseStatusException(
-                        NOT_FOUND, "Email not found or already verified"));
+                        NOT_FOUND, "User not found or already verified"));
 
         sendVerificationToken(user.getId(), user.getEmail());
     }

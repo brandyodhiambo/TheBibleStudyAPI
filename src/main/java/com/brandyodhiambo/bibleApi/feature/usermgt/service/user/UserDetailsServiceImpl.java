@@ -30,10 +30,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 throw new UnauthorizedException(
                         "Your email is not verified");
             }
-            return User.builder()
-                    .username(user.getUsername())
-                    .password(user.getPassword())
-                    .build();
+            return Users.build(user);
         }).orElseThrow(() -> new UsernameNotFoundException(
                 "User with username [%s] not found".formatted(username)));
     }

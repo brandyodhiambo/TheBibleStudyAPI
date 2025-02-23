@@ -47,9 +47,9 @@ public class AuthController {
 
     @PostMapping("/email/resend-verification")
     public ResponseEntity<Void> resendVerificationLink(
-            @RequestParam String email) {
+            @RequestParam String username) {
 
-        emailVerificationService.resendVerificationToken(email);
+        emailVerificationService.resendVerificationToken(username);
         return ResponseEntity.noContent().build();
     }
 
@@ -62,15 +62,5 @@ public class AuthController {
                 emailVerificationService.verifyEmail(userId, token);
 
         return ResponseEntity.ok(verifiedUser);
-    }
-
-    @GetMapping("/test-email")
-    public String testEmail() {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo("brandyariana99@gmail.com");
-        message.setSubject("Test Email");
-        message.setText("This is a test email from Spring Boot.");
-        mailSender.send(message);
-        return "Email sent!";
     }
 }

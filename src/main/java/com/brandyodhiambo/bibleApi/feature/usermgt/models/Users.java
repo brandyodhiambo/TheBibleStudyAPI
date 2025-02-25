@@ -56,7 +56,7 @@ public class Users implements UserDetails {
     @JsonIgnore
     private Set<Role>role = new HashSet<>();
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT",nullable = true)
     private String profilePicture;
 
     private Collection<? extends GrantedAuthority> authorities;

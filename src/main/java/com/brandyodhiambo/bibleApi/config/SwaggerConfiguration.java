@@ -29,7 +29,7 @@ public class SwaggerConfiguration {
                 .info(new Info()
                         .title("Spring Boot backend with RESTful APIs, session management")
                         .version("1.0")
-                        .description("Spring Boot Kotlin, built with java and PostgreSQL database")
+                        .description("Spring Boot java, built with java and PostgreSQL database")
                         .termsOfService("http://swagger.io/terms/")
                         .license(new License().name("Apache 2.0").url("http://springdoc.org"))
                         .contact(contact)

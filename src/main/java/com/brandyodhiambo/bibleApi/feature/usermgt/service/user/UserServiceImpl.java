@@ -5,11 +5,15 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.models.*;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.UserDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.RoleRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.security.service.JwtService;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,6 +47,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Override
     public Boolean checkUsernameAvailability(String username) {
         return userRepository.existsByUsername(username);
@@ -54,9 +61,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Users getUser(String email) {
-        return userRepository.findUserByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email));
+    public Users getUser(String username) {
+        Users user = userRepository.getUserByName(username);
+        return user;
     }
 
     @Override
@@ -148,7 +155,7 @@ public class UserServiceImpl implements UserService {
         return new LoginResponseDto(
                 jwt,
                 "Bearer",
-                userDetails.getId(),
+                user.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
                 roles,
@@ -156,8 +163,6 @@ public class UserServiceImpl implements UserService {
                 userDetails.getProfilePicture()
         );
     }
-
-
 
 
     @Override
@@ -206,6 +211,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public ApiResponse giveAdmin(String username) {
         Users user = userRepository.getUserByName(username);
         Set<Role> roles = new HashSet<>();

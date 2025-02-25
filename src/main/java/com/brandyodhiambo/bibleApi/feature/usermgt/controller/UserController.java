@@ -1,6 +1,7 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.controller;
 
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserPrincipal;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.UserDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.service.user.UserService;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
@@ -30,9 +31,10 @@ public class UserController {
     }
 
     @GetMapping("/getUser")
-    public ResponseEntity<Users> getUser(@RequestParam String email) {
-        Users user = userService.getUser(email);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserDto> getUser(@RequestParam String username) {
+        Users user = userService.getUser(username);
+        user.getRole().size();
+        return ResponseEntity.ok(new UserDto(user));
     }
 
     @PutMapping("/update/user/{username}")

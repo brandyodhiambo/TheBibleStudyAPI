@@ -48,13 +48,15 @@ public class Users implements UserDetails {
     @Column(name = "updated_at")
     private LocalDate updatedAt;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     @JsonIgnore
     private Set<Role>role = new HashSet<>();
+
+
 
     @Column(columnDefinition = "TEXT",nullable = true)
     private String profilePicture;

@@ -5,7 +5,6 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.models.*;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.UserDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.RoleRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
@@ -166,7 +165,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Users updateUser(Users newUser, String username, UserPrincipal currentUser) {
+    public Users updateUser(Users newUser, String username, Users currentUser) {
         Users user = userRepository.getUserByName(username);
 
         // Check if the current user is an admin
@@ -196,7 +195,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public ApiResponse deleteUser(String username, UserPrincipal currentUser) {
+    public void deleteUser(String username, Users currentUser) {
         Users user = userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", username));
         if (!user.getId().equals(currentUser.getId()) || !currentUser.getAuthorities()
@@ -207,7 +206,6 @@ public class UserServiceImpl implements UserService {
 
         userRepository.deleteById(user.getId());
 
-        return new ApiResponse(Boolean.TRUE, "You successfully deleted profile of: " + username);
     }
 
     @Override

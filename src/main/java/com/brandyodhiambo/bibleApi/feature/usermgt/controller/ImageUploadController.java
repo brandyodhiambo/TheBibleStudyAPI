@@ -90,7 +90,7 @@ public class ImageUploadController {
         }
     }
 
-    //Todo:Change to firebase storage
+    //Todo:Change to firebase storage currently saves in file path
     private String saveImage(MultipartFile file) throws IOException {
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
@@ -100,7 +100,6 @@ public class ImageUploadController {
         String fileName = file.getOriginalFilename();
         Path filePath = uploadPath.resolve(fileName);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
         return fileName;
     }
 }

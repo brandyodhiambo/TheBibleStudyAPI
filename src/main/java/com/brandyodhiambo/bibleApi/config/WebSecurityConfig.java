@@ -3,6 +3,7 @@ package com.brandyodhiambo.bibleApi.config;
 import com.brandyodhiambo.bibleApi.feature.usermgt.service.user.UserDetailsServiceImpl;
 import com.brandyodhiambo.bibleApi.security.jwt.AuthEntryPointJwt;
 import com.brandyodhiambo.bibleApi.security.jwt.JwtAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -66,6 +67,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/webjars/**").permitAll()
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers("/swagger-ui.html").permitAll()
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/users/delete/user/**").hasAnyAuthority("ROLE_ADMIN")
                                 .anyRequest().authenticated()
                 );
 

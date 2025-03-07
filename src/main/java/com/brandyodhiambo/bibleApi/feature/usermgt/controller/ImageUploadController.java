@@ -20,7 +20,7 @@ import java.nio.file.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/uploads")
+@RequestMapping("/api/profile")
 public class ImageUploadController {
 
     @Value("${file.upload-dir}")
@@ -33,25 +33,18 @@ public class ImageUploadController {
     private UserImageRepository userImageRepository;
 
     @Autowired
-    private UserRepository userRepository; // Inject UserRepository
+    private UserRepository userRepository;
 
-    @PostMapping("/images/{userId}")
-    public ResponseEntity<String> uploadImage(@PathVariable Long userId, @RequestParam("file") MultipartFile file) {
+    @PostMapping("/upload/{username}")
+    public ResponseEntity<String> uploadImage(@PathVariable String username, @RequestParam("file") MultipartFile file) {
         try {
-            // Fetch user by ID
-            Optional<Users> userOpt = userRepository.findById(userId);
+            Optional<Users> userOpt = userRepository.findUserByUsername(username);
             if (userOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
             }
             Users user = userOpt.get();
-
-            // Save image to filesystem
             String fileName = saveImage(file);
-
-            // Generate image URL
             String imageUrl = baseUrl + "/api/uploads/images/" + fileName;
-
-            // Update user profile picture URL
             user.setProfilePicture(imageUrl);
             userRepository.save(user);
 
@@ -61,14 +54,14 @@ public class ImageUploadController {
         }
     }
 
-    @GetMapping("/images/user/{username}")
+    @GetMapping("/getProfile/{username}")
     public ResponseEntity<?> getImageUrlByUsername(@PathVariable String username) {
         Optional<UserImage> userImageOpt = userImageRepository.findByUsername(username);
         if (userImageOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User image not found");
         }
 
-        String imageUrl = baseUrl + "/api/uploads/images/" + userImageOpt.get().getFileName();
+        String imageUrl = baseUrl + "/api/profile/image/" + userImageOpt.get().getFileName();
         return ResponseEntity.ok().body(imageUrl);
     }
 

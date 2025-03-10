@@ -1,5 +1,6 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.service.otp;
 
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,6 @@ import java.util.UUID;
 * */
 
 @Service
-@RequiredArgsConstructor
 public class OtpService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();

@@ -4,6 +4,7 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.service.otp.OtpService;
 import jakarta.transaction.Transactional;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.springframework.http.HttpStatus.*;
 
 @Service
-@RequiredArgsConstructor
 public class EmailVerificationService {
 
     private final OtpService otpService;
@@ -27,6 +27,7 @@ public class EmailVerificationService {
         this.userRepository = userRepository;
         this.mailSender = mailSender;
     }
+
 
     @Async
     public void sendVerificationToken(Long userId, String email) {

@@ -1,9 +1,19 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import jakarta.persistence.*;
+
 
 @Entity
 @Table(name = "user_images")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,34 +22,9 @@ public class UserImage {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(nullable = false)
-    private String fileName;
-
-    public UserImage() {}
-
-    public UserImage(String username, String fileName) {
-        this.username = username;
-        this.fileName = fileName;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
+    @Lob
+    @Column(name = "imagedata", length = 1000)
+    private byte[] imageData;
 }
+
 

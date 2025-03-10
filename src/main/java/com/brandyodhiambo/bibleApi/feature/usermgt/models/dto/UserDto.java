@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class UserDto {
 
     private String id;

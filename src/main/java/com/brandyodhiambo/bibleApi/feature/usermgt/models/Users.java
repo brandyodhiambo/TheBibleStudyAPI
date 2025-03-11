@@ -56,18 +56,13 @@ public class Users implements UserDetails {
     @JsonIgnore
     private Set<Role>role = new HashSet<>();
 
-
-
-    @Column(columnDefinition = "TEXT",nullable = true)
-    private String profilePicture;
-
     private Collection<? extends GrantedAuthority> authorities;
 
     public Users(){
 
     }
 
-    public Users(String firstName, String lastName, String username, String email, String password, LocalDate createdAt, LocalDate updatedAt, String profilePicture, boolean emailVerified, Collection<? extends GrantedAuthority> authorities) {
+    public Users(String firstName, String lastName, String username, String email, String password, LocalDate createdAt, LocalDate updatedAt, boolean emailVerified, Collection<? extends GrantedAuthority> authorities) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
@@ -75,7 +70,6 @@ public class Users implements UserDetails {
         this.password = password;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.profilePicture = profilePicture;
         this.emailVerified = emailVerified;
         this.authorities = authorities;
     }
@@ -94,7 +88,6 @@ public class Users implements UserDetails {
                 user.getPassword(),
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
-                user.getProfilePicture(),
                 user.isEmailVerified(),
                 authorities);
     }
@@ -113,14 +106,6 @@ public class Users implements UserDetails {
 
     public String getFirstName() {
         return firstName;
-    }
-
-    public String getProfilePicture() {
-        return profilePicture;
-    }
-
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
     }
 
     public void setFirstName(String firstName) {
@@ -219,5 +204,9 @@ public class Users implements UserDetails {
 
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public void setAuthorities(Set<GrantedAuthority> authorities) {
+        this.authorities = authorities;
     }
 }

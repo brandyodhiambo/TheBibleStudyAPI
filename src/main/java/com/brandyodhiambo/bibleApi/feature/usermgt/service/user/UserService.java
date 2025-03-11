@@ -19,7 +19,7 @@ public interface UserService {
     Users signUp(SignUpRequestDto signUpRequestDto);
     LoginResponseDto signIn(LoginRequestDto loginRequestDto);
 
-    Users updateUser(Users newUser, String username, Users currentUser);
+    Users updateUser(SignUpRequestDto newUser, String username, Users currentUser);
 
     void deleteUser(String username, Users currentUser);
 

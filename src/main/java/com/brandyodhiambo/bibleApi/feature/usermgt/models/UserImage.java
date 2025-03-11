@@ -23,6 +23,7 @@ public class UserImage {
     private String username;
 
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "imagedata", length = 1000)
     private byte[] imageData;
 }

@@ -117,7 +117,6 @@ public class UserServiceImpl implements UserService {
                 passwordEncoder.encode(signUpRequestDto.getPassword()),
                 LocalDate.now(),
                 LocalDate.now(),
-                signUpRequestDto.getProfilePicture(),
                 false,
                 authorities
         );
@@ -158,24 +157,17 @@ public class UserServiceImpl implements UserService {
                 userDetails.getUsername(),
                 userDetails.getEmail(),
                 roles,
-                jwtService.getExpirationTime(),
-                userDetails.getProfilePicture()
+                jwtService.getExpirationTime()
         );
     }
 
 
     @Override
-    public Users updateUser(Users newUser, String username, Users currentUser) {
+    public Users updateUser(SignUpRequestDto newUser, String username, Users currentUser) {
         Users user = userRepository.getUserByName(username);
-
-        // Check if the current user is an admin
         boolean isAdmin = currentUser.getAuthorities()
                 .contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()));
-
-        // Check if the current user is updating their own profile
         boolean isSelf = user.getId().equals(currentUser.getId());
-
-        // Check if the current user is a group leader
         boolean isGroupLeader = currentUser.getAuthorities()
                 .contains(new SimpleGrantedAuthority(RoleName.ROLE_LEADER.toString()));
 
@@ -198,41 +190,57 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(String username, Users currentUser) {
         Users user = userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", username));
-        if (!user.getId().equals(currentUser.getId()) || !currentUser.getAuthorities()
-                .contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()))) {
+        boolean isAdmin = currentUser.getAuthorities()
+                .contains(new SimpleGrantedAuthority(RoleName.ROLE_ADMIN.toString()));
+        boolean isSelf = user.getId().equals(currentUser.getId());
+        if(isAdmin || isSelf){
+            userRepository.deleteById(user.getId());
+        } else{
             ApiResponse apiResponse = new ApiResponse(Boolean.FALSE, "You don't have permission to delete profile of: " + username);
             throw new AccessDeniedException(apiResponse);
         }
-
-        userRepository.deleteById(user.getId());
-
     }
 
     @Override
     @Transactional
     public ApiResponse giveAdmin(String username) {
         Users user = userRepository.getUserByName(username);
+        if (user == null) {
+            throw new AppException("User not found");
+        }
         Set<Role> roles = new HashSet<>();
         roles.add(roleRepository.findByName(RoleName.ROLE_ADMIN)
                 .orElseThrow(() -> new AppException("User role not set")));
         roles.add(roleRepository.findByName(RoleName.ROLE_LEADER)
                 .orElseThrow(() -> new AppException("User role not set")));
-        roles.add(
-                roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));
+        roles.add(roleRepository.findByName(RoleName.ROLE_MEMBER)
+                .orElseThrow(() -> new AppException("User role not set")));
         user.setRole(roles);
+        Set<GrantedAuthority> authorities = roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toSet());
+        user.setAuthorities(authorities);
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You gave ADMIN role to user: " + username);
     }
 
+
     @Override
     public ApiResponse removeAdmin(String username) {
         Users user = userRepository.getUserByName(username);
+        if (user == null) {
+            throw new AppException("User not found");
+        }
         Set<Role> roles = new HashSet<>();
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_LEADER).orElseThrow(() -> new AppException("User role not set")));
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));
         user.setRole(roles);
+        Set<GrantedAuthority> authorities = roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toSet());
+        user.setAuthorities(authorities);
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You took ADMIN role from user: " + username);
     }
@@ -240,12 +248,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse giveGroupLeader(String username) {
         Users user = userRepository.getUserByName(username);
+        if (user == null) {
+            throw new AppException("User not found");
+        }
         Set<Role> roles = new HashSet<>();
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_LEADER).orElseThrow(() -> new AppException("User role not set")));
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));
         user.setRole(roles);
+        Set<GrantedAuthority> authorities = roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toSet());
+        user.setAuthorities(authorities);
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You give group leader role to user: " + username);
     }
@@ -253,10 +268,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse removeGroupLeader(String username) {
         Users user = userRepository.getUserByName(username);
+        if(user ==null){
+            throw new AppException("User not found");
+        }
         Set<Role> roles = new HashSet<>();
         roles.add(
                 roleRepository.findByName(RoleName.ROLE_MEMBER).orElseThrow(() -> new AppException("User role not set")));
         user.setRole(roles);
+        Set<GrantedAuthority> authorities = roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toSet());
+        user.setAuthorities(authorities);
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You took group leader role from user: " + username);
     }

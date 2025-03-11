@@ -29,7 +29,6 @@ public class UserDto {
 
     private Set<String> role;
 
-    private String profilePicture;
 
     public UserDto() {
     }
@@ -45,7 +44,6 @@ public class UserDto {
         this.role =user.getRole().stream()
                 .map(role -> role.getName().name())  // Convert Role objects to role names
                 .collect(Collectors.toSet());
-        this.profilePicture = user.getProfilePicture();
     }
 
     public String getId() {
@@ -102,13 +100,5 @@ public class UserDto {
 
     public void setRole(Set<String> role) {
         this.role = role;
-    }
-
-    public String getProfilePicture() {
-        return profilePicture;
-    }
-
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
     }
 }

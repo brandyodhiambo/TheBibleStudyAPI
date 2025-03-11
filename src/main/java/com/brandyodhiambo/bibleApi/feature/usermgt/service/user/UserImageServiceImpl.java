@@ -20,10 +20,18 @@ public class UserImageServiceImpl implements UserImageService {
     @Override
     public void saveUserImage(String username, MultipartFile file) throws IOException {
         try {
-            userImageRepository.save(UserImage.builder()
-                    .username(username)
-                    .imageData(ImageUtil.compressImage(file.getBytes()))
-                    .build());
+            Optional<UserImage> existingImage = userImageRepository.findByUsername(username);
+            if(existingImage.isPresent()){
+                UserImage userImage = existingImage.get();
+                userImage.setImageData(ImageUtil.compressImage(file.getBytes()));
+                userImage.setUsername(username);
+                userImageRepository.save(userImage);
+            } else{
+                userImageRepository.save(UserImage.builder()
+                        .username(username)
+                        .imageData(ImageUtil.compressImage(file.getBytes()))
+                        .build());
+            }
         } catch (IOException | java.io.IOException e) {
             throw new RuntimeException(e);
         }

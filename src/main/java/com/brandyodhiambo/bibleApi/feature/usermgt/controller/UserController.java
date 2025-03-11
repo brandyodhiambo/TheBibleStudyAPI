@@ -1,5 +1,6 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.controller;
 
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.UserDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.service.user.UserService;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
@@ -39,23 +40,18 @@ public class UserController {
     @PutMapping("/update/user/{username}")
     public ResponseEntity<Users> updateUser(
             @PathVariable String username,
-            @RequestBody Users updatedUser,
+            @RequestBody SignUpRequestDto updatedUser,
             @AuthenticationPrincipal Users currentUser) {
         Users user = userService.updateUser(updatedUser, username, currentUser);
         return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/delete/user/{username}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable String username, @AuthenticationPrincipal Users currentUser) {
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "You are not authorized to delete this user"));
         }
-
-        if (!currentUser.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(false, "You do not have permission to delete this user" +currentUser.getAuthorities()));
-        }
-
-        // Proceed with user deletion
         userService.deleteUser(username, currentUser);
         return ResponseEntity.ok(new ApiResponse(true, "User deleted successfully"));
     }

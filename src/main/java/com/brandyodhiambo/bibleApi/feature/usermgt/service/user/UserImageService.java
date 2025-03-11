@@ -10,5 +10,5 @@ public interface UserImageService {
     void saveUserImage(String username, MultipartFile file);
     UserImage getUserImage(String username);
     void deleteUserImage(String username);
-    public byte[] getImage(String name);
+    byte[] getImage(String name);
 }

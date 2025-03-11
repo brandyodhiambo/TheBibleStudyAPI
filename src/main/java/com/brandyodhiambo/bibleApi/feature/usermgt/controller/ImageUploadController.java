@@ -51,4 +51,8 @@ public class ImageUploadController {
                 .contentType(MediaType.valueOf("image/png"))
                 .body(image);
     }
+
+
+
+
 }

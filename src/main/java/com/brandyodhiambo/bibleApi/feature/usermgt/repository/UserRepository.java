@@ -14,15 +14,16 @@ public interface UserRepository extends JpaRepository<Users,Long> {
     Optional<Users> findUserByUsername(@NotBlank String username);
     Optional<Users> findUserByEmail(@NotBlank String email);
 
+
     Boolean existsByUsername(@NotBlank String username);
 
     Boolean existsByEmail(@NotBlank String email);
 
     Optional<Users> findByUsernameOrEmail(String username, String email);
 
-    default Users getUserByName(String email) {
-        return findUserByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+    default Users getUserByName(String username) {
+        return findUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
     }
 
 }

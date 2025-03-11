@@ -1,16 +1,17 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.controller;
 
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserPrincipal;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.UserDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.service.user.UserService;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -30,27 +31,31 @@ public class UserController {
     }
 
     @GetMapping("/getUser")
-    public ResponseEntity<Users> getUser(@RequestParam String email) {
-        Users user = userService.getUser(email);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserDto> getUser(@RequestParam String username) {
+        Users user = userService.getUser(username);
+        user.getRole().size();
+        return ResponseEntity.ok(new UserDto(user));
     }
 
     @PutMapping("/update/user/{username}")
     public ResponseEntity<Users> updateUser(
             @PathVariable String username,
-            @RequestBody Users updatedUser,
-            @AuthenticationPrincipal UserPrincipal currentUser) {
+            @RequestBody SignUpRequestDto updatedUser,
+            @AuthenticationPrincipal Users currentUser) {
         Users user = userService.updateUser(updatedUser, username, currentUser);
         return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/delete/user/{username}")
-    public ResponseEntity<ApiResponse> deleteUser(
-            @PathVariable String username,
-            @AuthenticationPrincipal UserPrincipal currentUser) {
-        ApiResponse response = userService.deleteUser(username, currentUser);
-        return ResponseEntity.ok(response);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> deleteUser(@PathVariable String username, @AuthenticationPrincipal Users currentUser) {
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "You are not authorized to delete this user"));
+        }
+        userService.deleteUser(username, currentUser);
+        return ResponseEntity.ok(new ApiResponse(true, "User deleted successfully"));
     }
+
 
     @PostMapping("/{username}/giveAdmin")
     @PreAuthorize("hasRole('ROLE_ADMIN')")

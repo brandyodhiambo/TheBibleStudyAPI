@@ -8,7 +8,6 @@ import org.hibernate.annotations.NaturalId;
 
 @Entity
 @Data
-@NoArgsConstructor
 @Table(name = "roles")
 public class Role {
     @Id

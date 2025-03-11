@@ -1,10 +1,7 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.models.dto;
 
-import com.brandyodhiambo.bibleApi.feature.usermgt.models.Role;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
-
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -28,17 +25,14 @@ public class SignUpRequestDto {
     @NotEmpty(message = "User role must be provided")
     private Set<String> role;
 
-    @NotEmpty(message = "User picture must be provided")
-    private String profilePicture;
 
-    public SignUpRequestDto( String firstName, String lastName, String username, String email, String password, Set<String> role, String profilePicture) {
+    public SignUpRequestDto( String firstName, String lastName, String username, String email, String password, Set<String> role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.email = email;
         this.password = password;
         this.role = role;
-        this.profilePicture = profilePicture;
     }
 
     public @NotEmpty(message = "User first name must be provided") String getFirstName() {
@@ -87,13 +81,5 @@ public class SignUpRequestDto {
 
     public void setRole(@NotEmpty(message = "User role must be provided") Set<String> role) {
         this.role = role;
-    }
-
-    public @NotEmpty(message = "User picture must be provided") String getProfilePicture() {
-        return profilePicture;
-    }
-
-    public void setProfilePicture(@NotEmpty(message = "User picture must be provided") String profilePicture) {
-        this.profilePicture = profilePicture;
     }
 }

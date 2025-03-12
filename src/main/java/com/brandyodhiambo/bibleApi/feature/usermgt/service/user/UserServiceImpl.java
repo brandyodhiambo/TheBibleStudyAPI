@@ -220,6 +220,9 @@ public class UserServiceImpl implements UserService {
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toSet());
         user.setAuthorities(authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user, user.getPassword(), authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You gave ADMIN role to user: " + username);
     }
@@ -241,6 +244,9 @@ public class UserServiceImpl implements UserService {
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toSet());
         user.setAuthorities(authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user, user.getPassword(), authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You took ADMIN role from user: " + username);
     }
@@ -261,6 +267,9 @@ public class UserServiceImpl implements UserService {
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toSet());
         user.setAuthorities(authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user, user.getPassword(), authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You give group leader role to user: " + username);
     }
@@ -279,6 +288,9 @@ public class UserServiceImpl implements UserService {
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toSet());
         user.setAuthorities(authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user, user.getPassword(), authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         userRepository.save(user);
         return new ApiResponse(Boolean.TRUE, "You took group leader role from user: " + username);
     }

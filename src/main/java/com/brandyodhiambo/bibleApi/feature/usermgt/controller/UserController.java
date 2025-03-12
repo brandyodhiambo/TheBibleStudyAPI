@@ -72,12 +72,14 @@ public class UserController {
     }
 
     @PostMapping("/{username}/give-group-leader")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse> giveGroupLeader(@PathVariable String username) {
         ApiResponse response = userService.giveGroupLeader(username);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{username}/remove-group-leader")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse> removeGroupLeader(@PathVariable String username) {
         ApiResponse response = userService.removeGroupLeader(username);
         return ResponseEntity.ok(response);

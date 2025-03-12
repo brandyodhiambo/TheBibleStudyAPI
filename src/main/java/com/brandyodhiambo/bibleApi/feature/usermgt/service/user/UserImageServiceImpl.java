@@ -18,6 +18,7 @@ public class UserImageServiceImpl implements UserImageService {
     private UserImageRepository userImageRepository;
 
     @Override
+    @Transactional
     public void saveUserImage(String username, MultipartFile file) throws IOException {
         try {
             Optional<UserImage> existingImage = userImageRepository.findByUsername(username);

@@ -1,6 +1,7 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.service.user;
 
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.UserImage;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserImageRepository;
 import com.brandyodhiambo.bibleApi.util.ImageUtil;
 import io.jsonwebtoken.io.IOException;
@@ -17,19 +18,23 @@ public class UserImageServiceImpl implements UserImageService {
     @Autowired
     private UserImageRepository userImageRepository;
 
+    @Autowired
+    private UserService userService;
+
     @Override
     @Transactional
     public void saveUserImage(String username, MultipartFile file) throws IOException {
         try {
-            Optional<UserImage> existingImage = userImageRepository.findByUsername(username);
+            Users user = userService.getUser(username);
+            Optional<UserImage> existingImage = userImageRepository.findByUser_Username(username);
             if(existingImage.isPresent()){
                 UserImage userImage = existingImage.get();
                 userImage.setImageData(ImageUtil.compressImage(file.getBytes()));
-                userImage.setUsername(username);
+                userImage.setUser(user);
                 userImageRepository.save(userImage);
             } else{
                 userImageRepository.save(UserImage.builder()
-                        .username(username)
+                        .user(user)
                         .imageData(ImageUtil.compressImage(file.getBytes()))
                         .build());
             }
@@ -41,11 +46,11 @@ public class UserImageServiceImpl implements UserImageService {
     @Override
     @Transactional
     public UserImage getUserImage(String username) {
-        Optional<UserImage> dbImage = userImageRepository.findByUsername(username);
+        Optional<UserImage> dbImage = userImageRepository.findByUser_Username(username);
         if (dbImage.isPresent()) {
             UserImage userImage = dbImage.get();
             return UserImage.builder()
-                    .username(userImage.getUsername())
+                    .user(userImage.getUser())
                     .imageData(ImageUtil.decompressImage(userImage.getImageData()))
                     .build();
         } else {
@@ -56,14 +61,14 @@ public class UserImageServiceImpl implements UserImageService {
 
     @Override
     public void deleteUserImage(String username) {
-        Optional<UserImage> userImage = userImageRepository.findByUsername(username);
+        Optional<UserImage> userImage = userImageRepository.findByUser_Username(username);
         userImage.ifPresent(userImageRepository::delete);
     }
 
     @Transactional
     @Override
     public byte[] getImage(String name) {
-        Optional<UserImage> dbImage = userImageRepository.findByUsername(name);
+        Optional<UserImage> dbImage = userImageRepository.findByUser_Username(name);
         return ImageUtil.decompressImage(dbImage.get().getImageData());
     }
 }

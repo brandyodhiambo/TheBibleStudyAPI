@@ -19,13 +19,12 @@ public class UserImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String username;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user;
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "imagedata", length = 1000)
     private byte[] imageData;
 }
-
-

@@ -1,0 +1,77 @@
+@startuml
+!define table(x) class x << (T,#FFAAAA) >>
+!define primary_key(x) <b>x</b>
+!define foreign_key(x) <u>x</u>
+!define column(x) <i>x</i>
+hide methods
+hide stereotypes
+
+' User Management Entities
+table(Users) {
+  primary_key(id): Long
+  column(firstName): String
+  column(lastName): String
+  column(username): String
+  column(email): String
+  column(password): String
+  column(emailVerified): boolean
+  column(createdAt): LocalDate
+  column(updatedAt): LocalDate
+}
+
+table(Role) {
+  primary_key(role_id): Long
+  column(name): RoleName
+}
+
+enum(RoleName) {
+  ROLE_ADMIN
+  ROLE_LEADER
+  ROLE_MEMBER
+}
+
+table(UserImage) {
+  primary_key(id): Long
+  foreign_key(user_id): Long
+  column(imageData): byte[]
+}
+
+table(user_roles) {
+  foreign_key(user_id): Long
+  foreign_key(role_id): Long
+}
+
+' Group Management Entities
+table(Group) {
+  primary_key(id): Long
+  column(name): String
+  column(description): String
+  column(location): String
+  column(meetingTime): LocalTime
+  column(type): GroupType
+  foreign_key(leader_id): Long
+  column(createdAt): LocalDate
+  column(updatedAt): LocalDate
+}
+
+enum(GroupType) {
+  VIRTUAL
+  IN_PERSON
+}
+
+table(group_members) {
+  foreign_key(group_id): Long
+  foreign_key(user_id): Long
+}
+
+' Relationships
+Users "1" -- "many" user_roles
+Role "1" -- "many" user_roles
+Users "1" -- "1" UserImage
+Users "1" -- "many" Group : leads
+Users "many" -- "many" group_members
+Group "1" -- "many" group_members
+Group "many" -- "1" GroupType
+Role "many" -- "1" RoleName
+
+@enduml

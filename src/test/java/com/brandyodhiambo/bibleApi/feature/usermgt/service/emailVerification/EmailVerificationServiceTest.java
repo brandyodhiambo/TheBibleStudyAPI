@@ -69,7 +69,7 @@ class EmailVerificationServiceTest {
         // Arrange
         String username = "testuser";
         when(userRepository.findUserByUsername(username)).thenReturn(Optional.of(testUser));
-        doNothing().when(otpService).generateAndStoreOtp(anyLong());
+        when(otpService.generateAndStoreOtp(any())).thenReturn("test-token");
         doNothing().when(mailSender).send(any(SimpleMailMessage.class));
 
         // Act
@@ -77,7 +77,7 @@ class EmailVerificationServiceTest {
 
         // Assert
         verify(userRepository).findUserByUsername(username);
-        verify(otpService).generateAndStoreOtp(anyLong());
+        verify(otpService).generateAndStoreOtp(any());
         verify(mailSender).send(any(SimpleMailMessage.class));
     }
 

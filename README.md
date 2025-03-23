@@ -35,6 +35,12 @@ Bible API is a Spring Boot application that provides a robust backend for Bible 
 - Profile image upload and retrieval
 - Role-based access control (Admin, Group Leader, User)
 
+### Group Management
+- Create and manage Bible study groups
+- Join or leave groups
+- View group details (leader, members, location, time, etc.)
+- Add or remove members from groups
+
 ### Security
 - JWT-based authentication
 - Role-based authorization
@@ -64,6 +70,19 @@ Bible API is a Spring Boot application that provides a robust backend for Bible 
 - `DELETE /api/v1/users/{username}/removeAdmin` - Revoke admin privileges (Admin only)
 - `POST /api/v1/users/{username}/give-group-leader` - Assign group leader role (Admin only)
 - `DELETE /api/v1/users/{username}/remove-group-leader` - Remove group leader role (Admin only)
+
+### Group Management
+- `POST /api/v1/groups` - Create a new group (Leader or Admin only)
+- `PUT /api/v1/groups/{groupId}` - Update a group (Leader or Admin only)
+- `DELETE /api/v1/groups/{groupId}` - Delete a group (Leader or Admin only)
+- `GET /api/v1/groups/{groupId}` - Get a group by ID
+- `GET /api/v1/groups` - Get all groups
+- `GET /api/v1/groups/leader` - Get groups led by the current user
+- `GET /api/v1/groups/member` - Get groups the current user is a member of
+- `POST /api/v1/groups/{groupId}/members` - Add a member to a group (Leader or Admin only)
+- `DELETE /api/v1/groups/{groupId}/members` - Remove a member from a group
+- `POST /api/v1/groups/{groupId}/join` - Join a group
+- `POST /api/v1/groups/{groupId}/leave` - Leave a group
 
 ### Profile Image Management
 - `POST /api/profile/upload/{username}` - Upload profile image
@@ -148,6 +167,97 @@ Once the application is running, you can access the API documentation at:
 ```
 http://localhost:8005/swagger-ui.html
 ```
+
+## Database Schema
+
+The database schema is also available as an Entity-Relationship Diagram (ERD) in UML notation:
+
+- [Database Schema UML Diagram](docs/diagrams/database_schema.puml)
+- [How to Generate ERD Diagrams](docs/diagrams/README.md)
+
+### Tables
+
+#### Users Table
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| id             | BIGINT       | PK, AUTO_INCREMENT        |
+| first_name     | TEXT         | NOT NULL                  |
+| last_name      | TEXT         | NOT NULL                  |
+| username       | TEXT         | NOT NULL                  |
+| email          | TEXT         | NOT NULL, UNIQUE          |
+| password       | TEXT         | NOT NULL                  |
+| email_verified | BOOLEAN      | NOT NULL                  |
+| created_at     | DATE         | NOT NULL                  |
+| updated_at     | DATE         | NOT NULL                  |
+
+#### Roles Table
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| role_id        | BIGINT       | PK, AUTO_INCREMENT        |
+| name           | VARCHAR(255) | NOT NULL, ENUM            |
+
+#### User Roles Table (Join Table)
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| user_id        | BIGINT       | FK -> users.id            |
+| role_id        | BIGINT       | FK -> roles.role_id       |
+
+#### Groups Table
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| id             | BIGINT       | PK, AUTO_INCREMENT        |
+| name           | VARCHAR(255) | NOT NULL                  |
+| description    | TEXT         |                           |
+| location       | VARCHAR(255) |                           |
+| meeting_time   | TIME         |                           |
+| type           | VARCHAR(255) | ENUM                      |
+| leader_id      | BIGINT       | FK -> users.id, NOT NULL  |
+| created_at     | DATE         | NOT NULL                  |
+| updated_at     | DATE         | NOT NULL                  |
+
+#### Group Members Table (Join Table)
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| group_id       | BIGINT       | FK -> groups.id           |
+| user_id        | BIGINT       | FK -> users.id            |
+
+#### User Images Table
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| id             | BIGINT       | PK, AUTO_INCREMENT        |
+| user_id        | BIGINT       | FK -> users.id, NOT NULL  |
+| imagedata      | BLOB         |                           |
+
+### Entity Relationships
+
+```
+Users (1) <----> (0..1) UserImage  (One-to-One)
+Users (N) <----> (M) Role          (Many-to-Many through user_roles)
+Users (1) <----> (N) Group         (One-to-Many as leader)
+Users (N) <----> (M) Group         (Many-to-Many through group_members)
+```
+
+#### Relationship Details:
+
+1. **Users and Roles**:
+   - A user can have multiple roles (ADMIN, LEADER, MEMBER)
+   - A role can be assigned to multiple users
+   - Implemented through the user_roles join table
+
+2. **Users and UserImage**:
+   - A user can have one profile image
+   - A profile image belongs to one user
+   - One-to-one relationship
+
+3. **Users and Groups (as leader)**:
+   - A user can lead multiple groups
+   - A group has exactly one leader
+   - One-to-many relationship
+
+4. **Users and Groups (as member)**:
+   - A user can be a member of multiple groups
+   - A group can have multiple members
+   - Many-to-many relationship through the group_members join table
 
 ## License
 [MIT License](LICENSE)

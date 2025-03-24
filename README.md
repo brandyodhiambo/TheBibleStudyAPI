@@ -152,6 +152,12 @@ Key security features include:
 - View group details (leader, members, location, time, etc.)
 - Add or remove members from groups
 
+### Event Management
+- Schedule recurring or one-time Bible study sessions
+- RSVP to study sessions to indicate attendance
+- Send reminders for upcoming sessions
+- View session details and attendance
+
 ### Security
 - JWT-based authentication
 - Role-based authorization
@@ -162,6 +168,7 @@ Key security features include:
 - Email verification for new accounts
 - Resend verification emails
 - OTP (One-Time Password) management
+- Session reminders and notifications
 
 ## API Endpoints
 
@@ -194,6 +201,29 @@ Key security features include:
 - `DELETE /api/v1/groups/{groupId}/members` - Remove a member from a group
 - `POST /api/v1/groups/{groupId}/join` - Join a group
 - `POST /api/v1/groups/{groupId}/leave` - Leave a group
+
+### Study Session Management
+- `POST /api/v1/sessions` - Create a new study session (Leader or Admin only)
+- `PUT /api/v1/sessions/{sessionId}` - Update a study session (Leader or Admin only)
+- `DELETE /api/v1/sessions/{sessionId}` - Delete a study session (Leader or Admin only)
+- `GET /api/v1/sessions/{sessionId}` - Get a study session by ID
+- `GET /api/v1/sessions/group/{groupId}` - Get all study sessions for a group
+- `GET /api/v1/sessions/group/{groupId}/upcoming` - Get upcoming study sessions for a group
+- `GET /api/v1/sessions/user/upcoming` - Get upcoming study sessions for the current user
+- `GET /api/v1/sessions/date-range` - Get study sessions by date range
+- `GET /api/v1/sessions/group/{groupId}/date-range` - Get study sessions by date range for a group
+- `POST /api/v1/sessions/send-reminders` - Manually trigger session reminders (Admin only)
+
+### RSVP Management
+- `POST /api/v1/rsvps/sessions/{sessionId}` - Submit an RSVP for a session
+- `PUT /api/v1/rsvps/{rsvpId}` - Update an existing RSVP
+- `DELETE /api/v1/rsvps/{rsvpId}` - Delete an RSVP
+- `GET /api/v1/rsvps/{rsvpId}` - Get an RSVP by ID
+- `GET /api/v1/rsvps/sessions/{sessionId}` - Get all RSVPs for a session
+- `GET /api/v1/rsvps/sessions/{sessionId}/status/{status}` - Get RSVPs by status
+- `GET /api/v1/rsvps/user` - Get all RSVPs by the current user
+- `GET /api/v1/rsvps/sessions/{sessionId}/user` - Get user's RSVP for a session
+- `GET /api/v1/rsvps/sessions/{sessionId}/count/{status}` - Count RSVPs by status
 
 ### Profile Image Management
 - `POST /api/profile/upload/{username}` - Upload profile image
@@ -327,8 +357,46 @@ The database schema is visualized in the following Entity-Relationship Diagram (
         |       +-------v--------+
         |       | group_members  |
         +------>|----------------|
-                | group_id (FK)  |
-                | user_id (FK)   |
+        |       | group_id (FK)  |
+        |       | user_id (FK)   |
+        |       +----------------+
+        |
+        |       +----------------+       +----------------+
+        |       | study_sessions |       | SessionType    |
+        +------>|----------------|       |----------------|
+        |       | id (PK)        |       | VIRTUAL        |
+        |       | title          |       | IN_PERSON      |
+        |       | description    |       | HYBRID         |
+        |       | sessionDate    |       +----------------+
+        |       | startTime      |               ^
+        |       | endTime        |               |
+        |       | location       |               |
+        |       | type           |---------------+
+        |       | recPattern     |               |
+        |       | recEndDate     |               |
+        |       | group_id (FK)  |       +----------------+
+        |       | created_by (FK)|       | RecurrencePattern|
+        |       | createdAt      |       |----------------|
+        |       | updatedAt      |       | NONE           |
+        |       +-------+--------+       | DAILY          |
+                        |                | WEEKLY         |
+                        |                | BI_WEEKLY      |
+                        |                | MONTHLY        |
+                        |                | CUSTOM         |
+                        |                +----------------+
+                        |                        ^
+                        |                        |
+                        |                        |
+                +-------v--------+       +----------------+
+                | session_rsvps  |       | RSVPStatus     |
+                |----------------|       |----------------|
+                | id (PK)        |       | ATTENDING      |
+                | session_id (FK)|       | NOT_ATTENDING  |
+                | user_id (FK)   |       | MAYBE          |
+                | status         |-------+----------------+
+                | comment        |
+                | createdAt      |
+                | updatedAt      |
                 +----------------+
 ```
 
@@ -386,6 +454,35 @@ The diagram shows the main entities and their relationships in the system:
 | group_id       | BIGINT       | FK -> groups.id           |
 | user_id        | BIGINT       | FK -> users.id            |
 
+#### Study Sessions Table
+| Column           | Type         | Constraints                |
+|------------------|--------------|----------------------------|
+| id               | BIGINT       | PK, AUTO_INCREMENT        |
+| title            | VARCHAR(255) | NOT NULL                  |
+| description      | TEXT         |                           |
+| session_date     | DATE         | NOT NULL                  |
+| start_time       | TIME         | NOT NULL                  |
+| end_time         | TIME         |                           |
+| location         | VARCHAR(255) |                           |
+| type             | VARCHAR(255) | ENUM                      |
+| recurrence_pattern | VARCHAR(255) | ENUM                    |
+| recurrence_end_date | DATE      |                           |
+| group_id         | BIGINT       | FK -> groups.id, NOT NULL |
+| created_by       | BIGINT       | FK -> users.id, NOT NULL  |
+| created_at       | TIMESTAMP    | NOT NULL                  |
+| updated_at       | TIMESTAMP    | NOT NULL                  |
+
+#### Session RSVPs Table
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| id             | BIGINT       | PK, AUTO_INCREMENT        |
+| session_id     | BIGINT       | FK -> study_sessions.id, NOT NULL |
+| user_id        | BIGINT       | FK -> users.id, NOT NULL  |
+| status         | VARCHAR(255) | ENUM, NOT NULL            |
+| comment        | TEXT         |                           |
+| created_at     | TIMESTAMP    | NOT NULL                  |
+| updated_at     | TIMESTAMP    | NOT NULL                  |
+
 #### User Images Table
 | Column         | Type         | Constraints                |
 |----------------|--------------|----------------------------|
@@ -396,10 +493,14 @@ The diagram shows the main entities and their relationships in the system:
 ### Entity Relationships
 
 ```
-Users (1) <----> (0..1) UserImage  (One-to-One)
-Users (N) <----> (M) Role          (Many-to-Many through user_roles)
-Users (1) <----> (N) Group         (One-to-Many as leader)
-Users (N) <----> (M) Group         (Many-to-Many through group_members)
+Users (1) <----> (0..1) UserImage       (One-to-One)
+Users (N) <----> (M) Role               (Many-to-Many through user_roles)
+Users (1) <----> (N) Group              (One-to-Many as leader)
+Users (N) <----> (M) Group              (Many-to-Many through group_members)
+Users (1) <----> (N) StudySession       (One-to-Many as creator)
+Users (N) <----> (M) StudySession       (Many-to-Many through session_rsvps)
+Group (1) <----> (N) StudySession       (One-to-Many)
+StudySession (1) <----> (N) SessionRSVP (One-to-Many)
 ```
 
 #### Relationship Details:
@@ -423,6 +524,26 @@ Users (N) <----> (M) Group         (Many-to-Many through group_members)
    - A user can be a member of multiple groups
    - A group can have multiple members
    - Many-to-many relationship through the group_members join table
+
+5. **Users and Study Sessions (as creator)**:
+   - A user can create multiple study sessions
+   - A study session has exactly one creator
+   - One-to-many relationship
+
+6. **Users and Study Sessions (as attendee)**:
+   - A user can RSVP to multiple study sessions
+   - A study session can have multiple attendees
+   - Many-to-many relationship through the session_rsvps join table
+
+7. **Groups and Study Sessions**:
+   - A group can have multiple study sessions
+   - A study session belongs to exactly one group
+   - One-to-many relationship
+
+8. **Study Sessions and RSVPs**:
+   - A study session can have multiple RSVPs
+   - An RSVP belongs to exactly one study session
+   - One-to-many relationship
 
 ## License
 [MIT License](LICENSE)

@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" />
+    </marker>
+  </defs>
+  <style>
+    .title {
+      font-family: Arial, sans-serif;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .table {
+      fill: #E8F5E9;
+      stroke: #388E3C;
+      stroke-width: 2;
+    }
+    .table-header {
+      fill: #C8E6C9;
+      stroke: #388E3C;
+      stroke-width: 2;
+    }
+    .table-name {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .column {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      text-anchor: start;
+      dominant-baseline: middle;
+    }
+    .pk {
+      font-weight: bold;
+    }
+    .fk {
+      font-style: italic;
+    }
+    .arrow {
+      stroke: #616161;
+      stroke-width: 2;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+    .relationship {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      text-anchor: middle;
+      fill: #616161;
+    }
+    .note {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      fill: #616161;
+    }
+  </style>
+  
+  <!-- Title -->
+  <text x="400" y="40" class="title">Bible API Database Schema</text>
+  
+  <!-- Users Table -->
+  <rect x="50" y="100" width="200" height="30" class="table-header" />
+  <text x="150" y="120" class="table-name">users</text>
+  <rect x="50" y="130" width="200" height="180" class="table" />
+  <text x="60" y="150" class="column pk">id: BIGINT (PK)</text>
+  <text x="60" y="170" class="column">first_name: TEXT</text>
+  <text x="60" y="190" class="column">last_name: TEXT</text>
+  <text x="60" y="210" class="column">username: TEXT</text>
+  <text x="60" y="230" class="column">email: TEXT (UNIQUE)</text>
+  <text x="60" y="250" class="column">password: TEXT</text>
+  <text x="60" y="270" class="column">email_verified: BOOLEAN</text>
+  <text x="60" y="290" class="column">created_at: DATE</text>
+  <text x="60" y="310" class="column">updated_at: DATE</text>
+  
+  <!-- Roles Table -->
+  <rect x="550" y="100" width="200" height="30" class="table-header" />
+  <text x="650" y="120" class="table-name">roles</text>
+  <rect x="550" y="130" width="200" height="60" class="table" />
+  <text x="560" y="150" class="column pk">role_id: BIGINT (PK)</text>
+  <text x="560" y="170" class="column">name: VARCHAR(255) (ENUM)</text>
+  
+  <!-- User Roles Table -->
+  <rect x="300" y="100" width="200" height="30" class="table-header" />
+  <text x="400" y="120" class="table-name">user_roles</text>
+  <rect x="300" y="130" width="200" height="60" class="table" />
+  <text x="310" y="150" class="column fk">user_id: BIGINT (FK)</text>
+  <text x="310" y="170" class="column fk">role_id: BIGINT (FK)</text>
+  
+  <!-- Groups Table -->
+  <rect x="50" y="350" width="200" height="30" class="table-header" />
+  <text x="150" y="370" class="table-name">groups</text>
+  <rect x="50" y="380" width="200" height="180" class="table" />
+  <text x="60" y="400" class="column pk">id: BIGINT (PK)</text>
+  <text x="60" y="420" class="column">name: VARCHAR(255)</text>
+  <text x="60" y="440" class="column">description: TEXT</text>
+  <text x="60" y="460" class="column">location: VARCHAR(255)</text>
+  <text x="60" y="480" class="column">meeting_time: TIME</text>
+  <text x="60" y="500" class="column">type: VARCHAR(255) (ENUM)</text>
+  <text x="60" y="520" class="column fk">leader_id: BIGINT (FK)</text>
+  <text x="60" y="540" class="column">created_at: DATE</text>
+  <text x="60" y="560" class="column">updated_at: DATE</text>
+  
+  <!-- Group Members Table -->
+  <rect x="300" y="350" width="200" height="30" class="table-header" />
+  <text x="400" y="370" class="table-name">group_members</text>
+  <rect x="300" y="380" width="200" height="60" class="table" />
+  <text x="310" y="400" class="column fk">group_id: BIGINT (FK)</text>
+  <text x="310" y="420" class="column fk">user_id: BIGINT (FK)</text>
+  
+  <!-- User Images Table -->
+  <rect x="550" y="350" width="200" height="30" class="table-header" />
+  <text x="650" y="370" class="table-name">user_images</text>
+  <rect x="550" y="380" width="200" height="80" class="table" />
+  <text x="560" y="400" class="column pk">id: BIGINT (PK)</text>
+  <text x="560" y="420" class="column fk">user_id: BIGINT (FK)</text>
+  <text x="560" y="440" class="column">imagedata: BLOB</text>
+  
+  <!-- Relationships -->
+  <!-- Users to User Roles -->
+  <path d="M 250 160 L 300 160" class="arrow" />
+  <text x="275" y="150" class="relationship">1:N</text>
+  
+  <!-- Roles to User Roles -->
+  <path d="M 550 160 L 500 160" class="arrow" />
+  <text x="525" y="150" class="relationship">1:N</text>
+  
+  <!-- Users to Groups (as leader) -->
+  <path d="M 150 310 L 150 350" class="arrow" />
+  <text x="170" y="330" class="relationship">1:N</text>
+  
+  <!-- Users to Group Members -->
+  <path d="M 250 250 C 275 250 275 410 300 410" class="arrow" />
+  <text x="275" y="390" class="relationship">1:N</text>
+  
+  <!-- Groups to Group Members -->
+  <path d="M 250 410 L 300 410" class="arrow" />
+  <text x="275" y="430" class="relationship">1:N</text>
+  
+  <!-- Users to User Images -->
+  <path d="M 250 200 C 400 200 400 420 550 420" class="arrow" />
+  <text x="400" y="440" class="relationship">1:1</text>
+  
+  <!-- Legend -->
+  <rect x="600" y="200" width="180" height="120" fill="#FFFDE7" stroke="#FBC02D" stroke-width="1" rx="5" ry="5" />
+  <text x="610" y="220" class="note" text-anchor="start">Legend:</text>
+  <text x="610" y="240" class="note pk" text-anchor="start">PK - Primary Key</text>
+  <text x="610" y="260" class="note fk" text-anchor="start">FK - Foreign Key</text>
+  <text x="610" y="280" class="note" text-anchor="start">1:N - One-to-Many</text>
+  <text x="610" y="300" class="note" text-anchor="start">1:1 - One-to-One</text>
+</svg>

@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" />
+    </marker>
+  </defs>
+  <style>
+    .title {
+      font-family: Arial, sans-serif;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .component {
+      fill: #E1F5FE;
+      stroke: #0288D1;
+      stroke-width: 2;
+      rx: 10;
+      ry: 10;
+    }
+    .database {
+      fill: #E8F5E9;
+      stroke: #388E3C;
+      stroke-width: 2;
+    }
+    .external {
+      fill: #FFF3E0;
+      stroke: #F57C00;
+      stroke-width: 2;
+      rx: 10;
+      ry: 10;
+    }
+    .label {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .arrow {
+      stroke: #616161;
+      stroke-width: 2;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+    .description {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      text-anchor: middle;
+      fill: #616161;
+    }
+  </style>
+  
+  <!-- Title -->
+  <text x="400" y="40" class="title">Bible API System Architecture</text>
+  
+  <!-- Client -->
+  <rect x="350" y="80" width="100" height="50" class="external" />
+  <text x="400" y="105" class="label">Client</text>
+  
+  <!-- API Gateway -->
+  <rect x="350" y="180" width="100" height="50" class="component" />
+  <text x="400" y="205" class="label">API Gateway</text>
+  
+  <!-- Core Components -->
+  <rect x="150" y="280" width="500" height="200" rx="10" ry="10" fill="#F5F5F5" stroke="#9E9E9E" stroke-width="2" />
+  <text x="400" y="300" class="label">Spring Boot Application</text>
+  
+  <!-- Authentication Service -->
+  <rect x="180" y="330" width="120" height="50" class="component" />
+  <text x="240" y="355" class="label">Authentication</text>
+  
+  <!-- User Management -->
+  <rect x="340" y="330" width="120" height="50" class="component" />
+  <text x="400" y="355" class="label">User Management</text>
+  
+  <!-- Group Management -->
+  <rect x="500" y="330" width="120" height="50" class="component" />
+  <text x="560" y="355" class="label">Group Management</text>
+  
+  <!-- Email Service -->
+  <rect x="180" y="410" width="120" height="50" class="component" />
+  <text x="240" y="435" class="label">Email Service</text>
+  
+  <!-- Profile Image Service -->
+  <rect x="340" y="410" width="120" height="50" class="component" />
+  <text x="400" y="435" class="label">Profile Image</text>
+  
+  <!-- Swagger API Docs -->
+  <rect x="500" y="410" width="120" height="50" class="component" />
+  <text x="560" y="435" class="label">API Documentation</text>
+  
+  <!-- Databases -->
+  <ellipse cx="240" cy="520" rx="80" ry="40" class="database" />
+  <text x="240" y="520" class="label">PostgreSQL</text>
+  
+  <!-- Redis -->
+  <ellipse cx="400" cy="520" rx="80" ry="40" class="database" />
+  <text x="400" y="520" class="label">Redis</text>
+  
+  <!-- Email Server -->
+  <ellipse cx="560" cy="520" rx="80" ry="40" class="external" />
+  <text x="560" y="520" class="label">Email Server</text>
+  
+  <!-- Connections -->
+  <path d="M 400 130 L 400 180" class="arrow" />
+  <path d="M 400 230 L 400 280" class="arrow" />
+  
+  <path d="M 240 380 L 240 410" class="arrow" />
+  <path d="M 400 380 L 400 410" class="arrow" />
+  
+  <path d="M 240 460 L 240 480" class="arrow" />
+  <text x="260" y="470" class="description">Store data</text>
+  
+  <path d="M 400 460 L 400 480" class="arrow" />
+  <text x="420" y="470" class="description">Cache/OTP</text>
+  
+  <path d="M 240 460 L 560 480" class="arrow" />
+  <text x="400" y="470" class="description">Send emails</text>
+  
+  <!-- Legend -->
+  <rect x="620" y="80" width="20" height="20" class="component" />
+  <text x="645" y="95" class="description" text-anchor="start">Internal Component</text>
+  
+  <rect x="620" y="110" width="20" height="20" class="database" />
+  <text x="645" y="125" class="description" text-anchor="start">Database</text>
+  
+  <rect x="620" y="140" width="20" height="20" class="external" />
+  <text x="645" y="155" class="description" text-anchor="start">External System</text>
+</svg>

@@ -1,10 +1,45 @@
 # Bible API
 
-A RESTful API for Bible study and user management with secure authentication and authorization.
+A comprehensive RESTful API for Bible study applications with advanced user management, group management, and robust security features.
 
 ## Overview
 
-Bible API is a Spring Boot application that provides a robust backend for Bible study applications. It includes comprehensive user management features with secure authentication, email verification, and role-based access control.
+Bible API is a modern Spring Boot application designed to provide a secure and scalable backend for Bible study applications. It offers a complete set of features including user authentication, email verification, role-based access control, group management, and profile image handling. Built with Java 17 and Spring Boot 3, this API follows best practices for security, performance, and code organization.
+
+## System Architecture
+
+The Bible API follows a layered architecture pattern with clear separation of concerns:
+
+![System Architecture Diagram](docs/diagrams/system_architecture.svg)
+
+The system consists of the following components:
+- **Client Applications**: Web, mobile, or desktop applications that consume the API
+- **API Gateway**: Entry point for all client requests
+- **Spring Boot Application**: Core application with various modules:
+  - Authentication Service: Handles user authentication and JWT token management
+  - User Management: Manages user accounts, roles, and profile information
+  - Group Management: Handles Bible study groups, memberships, and leadership
+  - Email Service: Manages email verification and notifications
+  - Profile Image Service: Handles user profile image upload and retrieval
+  - API Documentation: Swagger/OpenAPI documentation
+- **Databases**:
+  - PostgreSQL: Primary database for storing application data
+  - Redis: For caching and OTP management
+- **External Services**:
+  - Email Server: For sending verification emails and notifications
+
+## Security Architecture
+
+The API implements a comprehensive security model:
+
+![Security Architecture Diagram](docs/diagrams/security_architecture.svg)
+
+Key security features include:
+- **JWT-based Authentication**: Secure, stateless authentication using JSON Web Tokens
+- **Role-Based Access Control**: Three-tiered role system (Admin, Group Leader, Member)
+- **Password Encryption**: BCrypt password hashing
+- **Email Verification**: Required email verification for new accounts
+- **Method-Level Security**: Fine-grained access control at the method level
 
 ## Technologies Used
 
@@ -170,10 +205,15 @@ http://localhost:8005/swagger-ui.html
 
 ## Database Schema
 
-The database schema is also available as an Entity-Relationship Diagram (ERD) in UML notation:
+The database schema is visualized in the following Entity-Relationship Diagram (ERD):
 
-- [Database Schema UML Diagram](docs/diagrams/database_schema.puml)
-- [How to Generate ERD Diagrams](docs/diagrams/README.md)
+![Database Schema Diagram](docs/diagrams/database_schema.svg)
+
+The diagram shows the main entities and their relationships in the system:
+- **Users**: Core entity storing user information
+- **Roles**: Available roles in the system (Admin, Leader, Member)
+- **Groups**: Bible study groups with their properties
+- **User Images**: Profile images for users
 
 ### Tables
 

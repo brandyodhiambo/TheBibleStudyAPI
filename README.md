@@ -10,7 +10,43 @@ Bible API is a modern Spring Boot application designed to provide a secure and s
 
 The Bible API follows a layered architecture pattern with clear separation of concerns:
 
-![System Architecture Diagram](docs/diagrams/system_architecture.svg)
+```
++----------------+     +----------------+     +------------------------+
+|                |     |                |     |  Spring Boot App       |
+|     Client     +---->+  API Gateway   +---->+                        |
+|                |     |                |     |  +------------------+  |
++----------------+     +----------------+     |  | Authentication   |  |
+                                              |  +------------------+  |
+                                              |                        |
+                                              |  +------------------+  |
+                                              |  | User Management  |  |
+                                              |  +------------------+  |
+                                              |                        |
+                                              |  +------------------+  |
+                                              |  | Group Management |  |
+                                              |  +------------------+  |
+                                              |                        |
+                                              |  +------------------+  |
+                                              |  | Email Service    |  |
+                                              |  +------------------+  |
+                                              |                        |
+                                              |  +------------------+  |
+                                              |  | Profile Image    |  |
+                                              |  +------------------+  |
+                                              |                        |
+                                              |  +------------------+  |
+                                              |  | API Documentation|  |
+                                              |  +------------------+  |
+                                              +------------------------+
+                                                         |
+                                                         v
+                       +------------+    +----------+    +------------+
+                       | PostgreSQL |    |  Redis   |    | Email      |
+                       | (Database) |    | (Cache)  |    | Server     |
+                       +------------+    +----------+    +------------+
+```
+
+**System Architecture Diagram**
 
 The system consists of the following components:
 - **Client Applications**: Web, mobile, or desktop applications that consume the API
@@ -32,7 +68,47 @@ The system consists of the following components:
 
 The API implements a comprehensive security model:
 
-![Security Architecture Diagram](docs/diagrams/security_architecture.svg)
+```
++----------------+
+|     Client     |
++-------+--------+
+        |
+        v
++-------+------------------------------------------+
+|                Spring Security Framework         |
+|                                                  |
+|  +-------------------+    +-------------------+  |
+|  | JWT Authentication|    | Authentication    |  |
+|  | Filter            |    | Provider          |  |
+|  +--------+----------+    +---------+---------+  |
+|           |                         |            |
+|           v                         v            |
+|  +-------------------+    +-------------------+  |
+|  | User Details      |    | BCrypt Password   |  |
+|  | Service           |    | Encoder           |  |
+|  +--------+----------+    +---------+---------+  |
+|           |                         |            |
+|           v                         v            |
+|  +-------------------+    +-------------------+  |
+|  | Role-Based Access |    | Method Security   |  |
+|  | Control           |    |                   |  |
+|  +--------+----------+    +---------+---------+  |
+|           |                         |            |
+|           v                         v            |
+|  +-------------------+                           |
+|  | Email Verification|                           |
+|  |                   |                           |
+|  +-------------------+                           |
++-------+------------------------------------------+
+        |
+        v
++-------+--------+    +-------------------+
+| User & Role     |    | Redis            |
+| Database        |    | (OTP Storage)    |
++----------------+    +-------------------+
+```
+
+**Security Architecture Diagram**
 
 Key security features include:
 - **JWT-based Authentication**: Secure, stateless authentication using JSON Web Tokens
@@ -207,7 +283,56 @@ http://localhost:8005/swagger-ui.html
 
 The database schema is visualized in the following Entity-Relationship Diagram (ERD):
 
-![Database Schema Diagram](docs/diagrams/database_schema.svg)
+```
++----------------+       +----------------+       +----------------+
+|     Users      |       |   user_roles   |       |     Role       |
+|----------------|       |----------------|       |----------------|
+| id (PK)        |<----->| user_id (FK)   |<----->| role_id (PK)   |
+| firstName      |       | role_id (FK)   |       | name           |
+| lastName       |       +----------------+       +----------------+
+| username       |                                        |
+| email          |                                        |
+| password       |                                        v
+| emailVerified  |                                +----------------+
+| createdAt      |                                |   RoleName     |
+| updatedAt      |                                |----------------|
++-------+--------+                                | ROLE_ADMIN     |
+        |                                         | ROLE_LEADER    |
+        |                                         | ROLE_MEMBER    |
+        |                                         +----------------+
+        |
+        |       +----------------+
+        |       |   UserImage    |
+        +------>|----------------|
+        |       | id (PK)        |
+        |       | user_id (FK)   |
+        |       | imageData      |
+        |       +----------------+
+        |
+        |       +----------------+       +----------------+
+        |       |     Group      |       |   GroupType    |
+        +------>|----------------|       |----------------|
+        |       | id (PK)        |       | VIRTUAL        |
+        |       | name           |       | IN_PERSON      |
+        |       | description    |       +----------------+
+        |       | location       |               ^
+        |       | meetingTime    |               |
+        |       | type           |---------------+
+        |       | leader_id (FK) |
+        |       | createdAt      |
+        |       | updatedAt      |
+        |       +-------+--------+
+        |               |
+        |               |
+        |       +-------v--------+
+        |       | group_members  |
+        +------>|----------------|
+                | group_id (FK)  |
+                | user_id (FK)   |
+                +----------------+
+```
+
+**Database Schema Diagram**
 
 The diagram shows the main entities and their relationships in the system:
 - **Users**: Core entity storing user information

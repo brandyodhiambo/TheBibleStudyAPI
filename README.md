@@ -151,12 +151,25 @@ Key security features include:
 - Join or leave groups
 - View group details (leader, members, location, time, etc.)
 - Add or remove members from groups
+- Group chat for members to discuss study topics and share insights
 
 ### Event Management
 - Schedule recurring or one-time Bible study sessions
 - RSVP to study sessions to indicate attendance
 - Send reminders for upcoming sessions
 - View session details and attendance
+
+### Study Material Management
+- Upload and share study guides, reading plans, and related resources
+- Assign specific Bible readings or study topics for each session
+- Search for study material by keywords, topics, or Bible verses
+- Comment on study materials to share insights and ask questions
+
+### Prayer Requests
+- Submit prayer requests within a group
+- Track prayer requests and mark them as answered
+- Share testimonies for answered prayers
+- View prayer requests by group or by user
 
 ### Security
 - JWT-based authentication
@@ -224,6 +237,54 @@ Key security features include:
 - `GET /api/v1/rsvps/user` - Get all RSVPs by the current user
 - `GET /api/v1/rsvps/sessions/{sessionId}/user` - Get user's RSVP for a session
 - `GET /api/v1/rsvps/sessions/{sessionId}/count/{status}` - Count RSVPs by status
+
+### Study Material Management
+- `POST /api/v1/study-materials/upload` - Upload a study material (Leader or Admin only)
+- `GET /api/v1/study-materials/{materialId}` - Get a study material by ID
+- `GET /api/v1/study-materials/group/{groupId}` - Get all study materials for a group
+- `GET /api/v1/study-materials/user` - Get all study materials uploaded by the current user
+- `GET /api/v1/study-materials/search` - Search study materials by keywords
+- `GET /api/v1/study-materials/search/group/{groupId}` - Search study materials within a group
+- `PUT /api/v1/study-materials/{materialId}` - Update a study material
+- `DELETE /api/v1/study-materials/{materialId}` - Delete a study material
+- `GET /api/v1/study-materials/download/{materialId}` - Download a study material file
+
+### Reading Plan Management
+- `POST /api/v1/reading-plans` - Create a new reading plan (Leader or Admin only)
+- `GET /api/v1/reading-plans/{planId}` - Get a reading plan by ID
+- `GET /api/v1/reading-plans/group/{groupId}` - Get all reading plans for a group
+- `GET /api/v1/reading-plans/user` - Get all reading plans created by the current user
+- `GET /api/v1/reading-plans/search` - Search reading plans by keywords
+- `GET /api/v1/reading-plans/search/group/{groupId}` - Search reading plans within a group
+- `GET /api/v1/reading-plans/date-range` - Get reading plans within a date range
+- `GET /api/v1/reading-plans/group/{groupId}/date-range` - Get reading plans within a date range for a group
+- `PUT /api/v1/reading-plans/{planId}` - Update a reading plan
+- `DELETE /api/v1/reading-plans/{planId}` - Delete a reading plan
+
+### Group Chat Management
+- `POST /api/v1/chat/groups/{groupId}/messages` - Send a message to a group
+- `GET /api/v1/chat/groups/{groupId}/messages` - Get all messages for a group
+- `GET /api/v1/chat/messages/{messageId}` - Get a specific message by ID
+- `DELETE /api/v1/chat/messages/{messageId}` - Delete a message
+
+### Comment Management
+- `POST /api/v1/comments/study-materials/{studyMaterialId}` - Add a comment to a study material
+- `GET /api/v1/comments/study-materials/{studyMaterialId}` - Get all comments for a study material
+- `GET /api/v1/comments/{commentId}` - Get a specific comment by ID
+- `PUT /api/v1/comments/{commentId}` - Update a comment
+- `DELETE /api/v1/comments/{commentId}` - Delete a comment
+- `GET /api/v1/comments/user` - Get all comments by the current user
+
+### Prayer Request Management
+- `POST /api/v1/prayer-requests/groups/{groupId}` - Create a new prayer request for a group
+- `GET /api/v1/prayer-requests/groups/{groupId}` - Get all prayer requests for a group
+- `GET /api/v1/prayer-requests/groups/{groupId}/answered/{answered}` - Get prayer requests for a group by answered status
+- `GET /api/v1/prayer-requests/{prayerRequestId}` - Get a specific prayer request by ID
+- `PUT /api/v1/prayer-requests/{prayerRequestId}` - Update a prayer request
+- `PUT /api/v1/prayer-requests/{prayerRequestId}/mark-answered` - Mark a prayer request as answered and add testimony
+- `DELETE /api/v1/prayer-requests/{prayerRequestId}` - Delete a prayer request
+- `GET /api/v1/prayer-requests/user` - Get all prayer requests by the current user
+- `GET /api/v1/prayer-requests/user/answered/{answered}` - Get prayer requests by the current user by answered status
 
 ### Profile Image Management
 - `POST /api/profile/upload/{username}` - Upload profile image
@@ -361,6 +422,17 @@ The database schema is visualized in the following Entity-Relationship Diagram (
         |       | user_id (FK)   |
         |       +----------------+
         |
+        |       +----------------+
+        |       | chat_messages  |
+        +------>|----------------|
+        |       | id (PK)        |
+        |       | content        |
+        |       | group_id (FK)  |
+        |       | sender_id (FK) |
+        |       | createdAt      |
+        |       | updatedAt      |
+        |       +----------------+
+        |
         |       +----------------+       +----------------+
         |       | study_sessions |       | SessionType    |
         +------>|----------------|       |----------------|
@@ -398,6 +470,65 @@ The database schema is visualized in the following Entity-Relationship Diagram (
                 | createdAt      |
                 | updatedAt      |
                 +----------------+
+
+        |       +----------------+
+        |       | study_materials|
+        +------>|----------------|
+        |       | id (PK)        |
+        |       | title          |
+        |       | description    |
+        |       | fileName       |
+        |       | fileType       |
+        |       | fileSize       |
+        |       | fileData       |
+        |       | group_id (FK)  |
+        |       | uploaded_by (FK)|
+        |       | keywords       |
+        |       | createdAt      |
+        |       | updatedAt      |
+        |       +-------+--------+
+        |               |
+        |               |
+        |       +-------v--------+
+        |       |    comments    |
+        +------>|----------------|
+        |       | id (PK)        |
+        |       | content        |
+        |       | study_material_id (FK) |
+        |       | user_id (FK)   |
+        |       | createdAt      |
+        |       | updatedAt      |
+        |       +----------------+
+        |
+        |       +----------------+
+        |       | reading_plans  |
+        +------>|----------------|
+        |       | id (PK)        |
+        |       | title          |
+        |       | description    |
+        |       | bibleReferences|
+        |       | startDate      |
+        |       | endDate        |
+        |       | group_id (FK)  |
+        |       | created_by (FK)|
+        |       | topics         |
+        |       | createdAt      |
+        |       | updatedAt      |
+        |       +----------------+
+        |
+        |       +----------------+
+        |       | prayer_requests|
+        +------>|----------------|
+        |       | id (PK)        |
+        |       | title          |
+        |       | description    |
+        |       | group_id (FK)  |
+        |       | user_id (FK)   |
+        |       | answered       |
+        |       | testimony      |
+        |       | createdAt      |
+        |       | updatedAt      |
+        |       +----------------+
 ```
 
 **Database Schema Diagram**
@@ -483,6 +614,70 @@ The diagram shows the main entities and their relationships in the system:
 | created_at     | TIMESTAMP    | NOT NULL                  |
 | updated_at     | TIMESTAMP    | NOT NULL                  |
 
+#### Study Materials Table
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| id             | BIGINT       | PK, AUTO_INCREMENT        |
+| title          | VARCHAR(255) | NOT NULL                  |
+| description    | TEXT         |                           |
+| file_name      | VARCHAR(255) | NOT NULL                  |
+| file_type      | VARCHAR(255) | NOT NULL                  |
+| file_size      | BIGINT       | NOT NULL                  |
+| file_data      | LONGBLOB     | NOT NULL                  |
+| group_id       | BIGINT       | FK -> groups.id, NOT NULL |
+| uploaded_by    | BIGINT       | FK -> users.id, NOT NULL  |
+| keywords       | VARCHAR(255) | NOT NULL                  |
+| created_at     | TIMESTAMP    | NOT NULL                  |
+| updated_at     | TIMESTAMP    | NOT NULL                  |
+
+#### Reading Plans Table
+| Column           | Type         | Constraints                |
+|------------------|--------------|----------------------------|
+| id               | BIGINT       | PK, AUTO_INCREMENT        |
+| title            | VARCHAR(255) | NOT NULL                  |
+| description      | TEXT         |                           |
+| bible_references | TEXT         | NOT NULL                  |
+| start_date       | DATE         | NOT NULL                  |
+| end_date         | DATE         | NOT NULL                  |
+| group_id         | BIGINT       | FK -> groups.id, NOT NULL |
+| created_by       | BIGINT       | FK -> users.id, NOT NULL  |
+| topics           | VARCHAR(255) | NOT NULL                  |
+| created_at       | TIMESTAMP    | NOT NULL                  |
+| updated_at       | TIMESTAMP    | NOT NULL                  |
+
+#### Chat Messages Table
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| id             | BIGINT       | PK, AUTO_INCREMENT        |
+| content        | TEXT         | NOT NULL                  |
+| group_id       | BIGINT       | FK -> groups.id, NOT NULL |
+| sender_id      | BIGINT       | FK -> users.id, NOT NULL  |
+| created_at     | TIMESTAMP    | NOT NULL                  |
+| updated_at     | TIMESTAMP    | NOT NULL                  |
+
+#### Comments Table
+| Column           | Type         | Constraints                |
+|------------------|--------------|----------------------------|
+| id               | BIGINT       | PK, AUTO_INCREMENT        |
+| content          | TEXT         | NOT NULL                  |
+| study_material_id| BIGINT       | FK -> study_materials.id, NOT NULL |
+| user_id          | BIGINT       | FK -> users.id, NOT NULL  |
+| created_at       | TIMESTAMP    | NOT NULL                  |
+| updated_at       | TIMESTAMP    | NOT NULL                  |
+
+#### Prayer Requests Table
+| Column         | Type         | Constraints                |
+|----------------|--------------|----------------------------|
+| id             | BIGINT       | PK, AUTO_INCREMENT        |
+| title          | VARCHAR(255) | NOT NULL                  |
+| description    | TEXT         | NOT NULL                  |
+| group_id       | BIGINT       | FK -> groups.id, NOT NULL |
+| user_id        | BIGINT       | FK -> users.id, NOT NULL  |
+| answered       | BOOLEAN      | NOT NULL                  |
+| testimony      | TEXT         |                           |
+| created_at     | TIMESTAMP    | NOT NULL                  |
+| updated_at     | TIMESTAMP    | NOT NULL                  |
+
 #### User Images Table
 | Column         | Type         | Constraints                |
 |----------------|--------------|----------------------------|
@@ -497,10 +692,20 @@ Users (1) <----> (0..1) UserImage       (One-to-One)
 Users (N) <----> (M) Role               (Many-to-Many through user_roles)
 Users (1) <----> (N) Group              (One-to-Many as leader)
 Users (N) <----> (M) Group              (Many-to-Many through group_members)
+Users (1) <----> (N) ChatMessage        (One-to-Many as sender)
+Group (1) <----> (N) ChatMessage        (One-to-Many)
 Users (1) <----> (N) StudySession       (One-to-Many as creator)
 Users (N) <----> (M) StudySession       (Many-to-Many through session_rsvps)
 Group (1) <----> (N) StudySession       (One-to-Many)
 StudySession (1) <----> (N) SessionRSVP (One-to-Many)
+Users (1) <----> (N) StudyMaterial      (One-to-Many as uploader)
+Group (1) <----> (N) StudyMaterial      (One-to-Many)
+StudyMaterial (1) <----> (N) Comment    (One-to-Many)
+Users (1) <----> (N) Comment            (One-to-Many)
+Users (1) <----> (N) ReadingPlan        (One-to-Many as creator)
+Group (1) <----> (N) ReadingPlan        (One-to-Many)
+Users (1) <----> (N) PrayerRequest      (One-to-Many)
+Group (1) <----> (N) PrayerRequest      (One-to-Many)
 ```
 
 #### Relationship Details:
@@ -543,6 +748,56 @@ StudySession (1) <----> (N) SessionRSVP (One-to-Many)
 8. **Study Sessions and RSVPs**:
    - A study session can have multiple RSVPs
    - An RSVP belongs to exactly one study session
+   - One-to-many relationship
+
+9. **Users and Study Materials**:
+   - A user can upload multiple study materials
+   - A study material has exactly one uploader
+   - One-to-many relationship
+
+10. **Groups and Study Materials**:
+   - A group can have multiple study materials
+   - A study material belongs to exactly one group
+   - One-to-many relationship
+
+11. **Users and Reading Plans**:
+   - A user can create multiple reading plans
+   - A reading plan has exactly one creator
+   - One-to-many relationship
+
+12. **Groups and Reading Plans**:
+   - A group can have multiple reading plans
+   - A reading plan belongs to exactly one group
+   - One-to-many relationship
+
+13. **Users and Chat Messages**:
+   - A user can send multiple chat messages
+   - A chat message has exactly one sender
+   - One-to-many relationship
+
+14. **Groups and Chat Messages**:
+   - A group can have multiple chat messages
+   - A chat message belongs to exactly one group
+   - One-to-many relationship
+
+15. **Study Materials and Comments**:
+   - A study material can have multiple comments
+   - A comment belongs to exactly one study material
+   - One-to-many relationship
+
+16. **Users and Comments**:
+   - A user can create multiple comments
+   - A comment has exactly one author
+   - One-to-many relationship
+
+17. **Users and Prayer Requests**:
+   - A user can create multiple prayer requests
+   - A prayer request has exactly one author
+   - One-to-many relationship
+
+18. **Groups and Prayer Requests**:
+   - A group can have multiple prayer requests
+   - A prayer request belongs to exactly one group
    - One-to-many relationship
 
 ## License

@@ -23,8 +23,8 @@ public class GroupController {
 
     private final GroupService groupService;
 
-    @PostMapping
-    @PreAuthorize("hasRole('LEADER') or hasRole('ADMIN')")
+    @PostMapping("/create")
+    @PreAuthorize("hasRole('ROLE_LEADER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<GroupResponse> createGroup(
             @Valid @RequestBody CreateGroupRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -32,7 +32,7 @@ public class GroupController {
         return new ResponseEntity<>(group, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{groupId}")
+    @PutMapping("update/{groupId}")
     public ResponseEntity<GroupResponse> updateGroup(
             @PathVariable Long groupId,
             @Valid @RequestBody UpdateGroupRequest request,
@@ -41,7 +41,7 @@ public class GroupController {
         return ResponseEntity.ok(group);
     }
 
-    @DeleteMapping("/{groupId}")
+    @DeleteMapping("delete-group/{groupId}")
     public ResponseEntity<Void> deleteGroup(
             @PathVariable Long groupId,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -49,34 +49,34 @@ public class GroupController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{groupId}")
+    @GetMapping("one-group/{groupId}")
     public ResponseEntity<GroupResponse> getGroup(@PathVariable Long groupId) {
         GroupResponse group = groupService.getGroup(groupId);
         return ResponseEntity.ok(group);
     }
 
-    @GetMapping
+    @GetMapping("/all-groups")
     public ResponseEntity<List<GroupResponse>> getAllGroups() {
         List<GroupResponse> groups = groupService.getAllGroups();
         return ResponseEntity.ok(groups);
     }
 
-    @GetMapping("/leader")
+    @GetMapping("group-leader/leader")
     public ResponseEntity<List<GroupResponse>> getGroupsByLeader(
             @AuthenticationPrincipal UserDetails userDetails) {
         List<GroupResponse> groups = groupService.getGroupsByLeader(userDetails.getUsername());
         return ResponseEntity.ok(groups);
     }
 
-    @GetMapping("/member")
+    @GetMapping("group-member/member")
     public ResponseEntity<List<GroupResponse>> getGroupsByMember(
             @AuthenticationPrincipal UserDetails userDetails) {
         List<GroupResponse> groups = groupService.getGroupsByMember(userDetails.getUsername());
         return ResponseEntity.ok(groups);
     }
 
-    @PostMapping("/{groupId}/members")
-    @PreAuthorize("hasRole('LEADER') or hasRole('ADMIN')")
+    @PostMapping("/{groupId}/add-members")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_LEADER')")
     public ResponseEntity<GroupResponse> addMember(
             @PathVariable Long groupId,
             @Valid @RequestBody GroupMemberRequest request,
@@ -85,7 +85,7 @@ public class GroupController {
         return ResponseEntity.ok(group);
     }
 
-    @DeleteMapping("/{groupId}/members")
+    @DeleteMapping("/{groupId}/remove-members")
     public ResponseEntity<GroupResponse> removeMember(
             @PathVariable Long groupId,
             @Valid @RequestBody GroupMemberRequest request,
@@ -94,7 +94,7 @@ public class GroupController {
         return ResponseEntity.ok(group);
     }
 
-    @PostMapping("/{groupId}/join")
+    @PostMapping("/{groupId}/join-group")
     public ResponseEntity<GroupResponse> joinGroup(
             @PathVariable Long groupId,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -102,7 +102,7 @@ public class GroupController {
         return ResponseEntity.ok(group);
     }
 
-    @PostMapping("/{groupId}/leave")
+    @PostMapping("/{groupId}/leave-group")
     public ResponseEntity<GroupResponse> leaveGroup(
             @PathVariable Long groupId,
             @AuthenticationPrincipal UserDetails userDetails) {

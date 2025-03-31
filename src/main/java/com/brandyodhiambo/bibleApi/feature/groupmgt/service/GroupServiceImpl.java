@@ -124,6 +124,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public GroupResponse getGroup(Long groupId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId.toString()));
@@ -132,6 +133,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public List<GroupResponse> getAllGroups() {
         return groupRepository.findAll().stream()
                 .map(this::mapToGroupResponse)
@@ -139,6 +141,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public List<GroupResponse> getGroupsByLeader(String username) {
         Users leader = userRepository.getUserByName(username);
 
@@ -148,6 +151,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public List<GroupResponse> getGroupsByMember(String username) {
         Users member = userRepository.getUserByName(username);
 

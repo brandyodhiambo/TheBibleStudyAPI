@@ -24,7 +24,7 @@ public class StudySessionController {
 
     private final StudySessionService studySessionService;
 
-    @PostMapping
+    @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ROLE_LEADER', 'ROLE_ADMIN')")
     public ResponseEntity<SessionResponse> createSession(
             @Valid @RequestBody CreateSessionRequest request,
@@ -33,7 +33,7 @@ public class StudySessionController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{sessionId}")
+    @PutMapping("update/{sessionId}")
     @PreAuthorize("hasAnyRole('ROLE_LEADER', 'ROLE_ADMIN')")
     public ResponseEntity<SessionResponse> updateSession(
             @PathVariable Long sessionId,
@@ -43,7 +43,7 @@ public class StudySessionController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{sessionId}")
+    @DeleteMapping("delete/{sessionId}")
     @PreAuthorize("hasAnyRole('ROLE_LEADER', 'ROLE_ADMIN')")
     public ResponseEntity<Void> deleteSession(
             @PathVariable Long sessionId,
@@ -52,25 +52,25 @@ public class StudySessionController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{sessionId}")
+    @GetMapping("get-session/{sessionId}")
     public ResponseEntity<SessionResponse> getSession(@PathVariable Long sessionId) {
         SessionResponse response = studySessionService.getSession(sessionId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/group/{groupId}")
+    @GetMapping("session-by-groupId/group/{groupId}")
     public ResponseEntity<List<SessionResponse>> getSessionsByGroup(@PathVariable Long groupId) {
         List<SessionResponse> sessions = studySessionService.getSessionsByGroup(groupId);
         return ResponseEntity.ok(sessions);
     }
 
-    @GetMapping("/group/{groupId}/upcoming")
+    @GetMapping("upcoming-session-by-group/group/{groupId}/upcoming")
     public ResponseEntity<List<SessionResponse>> getUpcomingSessionsByGroup(@PathVariable Long groupId) {
         List<SessionResponse> sessions = studySessionService.getUpcomingSessionsByGroup(groupId);
         return ResponseEntity.ok(sessions);
     }
 
-    @GetMapping("/user/upcoming")
+    @GetMapping("upcoming-session-for-user/user/upcoming")
     public ResponseEntity<List<SessionResponse>> getUpcomingSessionsForUser(
             @AuthenticationPrincipal UserDetails userDetails) {
         List<SessionResponse> sessions = studySessionService.getUpcomingSessionsForUser(userDetails.getUsername());

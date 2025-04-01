@@ -2,9 +2,13 @@ package com.brandyodhiambo.bibleApi.feature.usermgt.service.user;
 
 import com.brandyodhiambo.bibleApi.exception.*;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.*;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.ChangePasswordRequestDto;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.ForgotPasswordRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.ResetPasswordRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
+import com.brandyodhiambo.bibleApi.feature.usermgt.service.otp.OtpService;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.RoleRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
@@ -27,6 +31,8 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 @Component
 public class UserServiceImpl implements UserService {
@@ -298,5 +304,82 @@ public class UserServiceImpl implements UserService {
     @Override
     public void save(Users user) {
         userRepository.save(user);
+    }
+
+    @Autowired
+    private OtpService otpService;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Override
+    public void forgotPassword(ForgotPasswordRequestDto requestDto) {
+        String email = requestDto.getEmail();
+        Users user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        String token = otpService.generateAndStoreOtp(user.getId());
+
+        // Send password reset email
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Password Reset Request");
+        message.setFrom("System");
+
+        String resetUrl = "http://localhost:8005/reset-password?uid=" + user.getId() + "&token=" + token;
+        String emailText = "Click the link to reset your password: " + resetUrl + 
+                "\nThis link will expire in 5 minutes.";
+
+        message.setText(emailText);
+        mailSender.send(message);
+    }
+
+    @Override
+    public ApiResponse resetPassword(ResetPasswordRequestDto requestDto) {
+        // Validate token
+        if (!otpService.isOtpValid(requestDto.getUserId(), requestDto.getToken())) {
+            return new ApiResponse(Boolean.FALSE, "Invalid or expired token");
+        }
+
+        // Validate passwords match
+        if (!requestDto.getNewPassword().equals(requestDto.getConfirmPassword())) {
+            return new ApiResponse(Boolean.FALSE, "Passwords do not match");
+        }
+
+        // Get user
+        Users user = userRepository.findById(requestDto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", requestDto.getUserId().toString()));
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(requestDto.getNewPassword()));
+        userRepository.save(user);
+
+        // Delete token
+        otpService.deleteOtp(requestDto.getUserId());
+
+        return new ApiResponse(Boolean.TRUE, "Password reset successfully");
+    }
+
+    @Override
+    public ApiResponse changePassword(String username, ChangePasswordRequestDto requestDto) {
+        // Get user
+        Users user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User with username: " + username + " is not found"));
+
+        // Validate current password
+        if (!passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPassword())) {
+            return new ApiResponse(Boolean.FALSE, "Current password is incorrect");
+        }
+
+        // Validate passwords match
+        if (!requestDto.getNewPassword().equals(requestDto.getConfirmPassword())) {
+            return new ApiResponse(Boolean.FALSE, "Passwords do not match");
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(requestDto.getNewPassword()));
+        userRepository.save(user);
+
+        return new ApiResponse(Boolean.TRUE, "Password changed successfully");
     }
 }

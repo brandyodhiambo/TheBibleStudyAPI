@@ -893,6 +893,17 @@ Group (1) <----> (N) PrayerRequest      (One-to-Many)
 ```
 
 
+## Continuous Integration
+
+This project uses GitHub Actions for continuous integration. The CI pipeline automatically builds the project and runs tests on every push to the main branch and on pull requests.
+
+The workflow includes:
+- Building the project with Gradle
+- Running tests
+- Setting up Redis for integration tests
+
+You can view the CI workflow configuration in the `.github/workflows/build.yml` file.
+
 ## License
 [MIT License](LICENSE)
 

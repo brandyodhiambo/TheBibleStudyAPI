@@ -1,7 +1,10 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.service.user;
 
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.ChangePasswordRequestDto;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.ForgotPasswordRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.LoginResponseDto;
+import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.ResetPasswordRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.SignUpRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.util.ApiResponse;
@@ -32,4 +35,9 @@ public interface UserService {
     ApiResponse removeGroupLeader(String username);
     void save(Users user);
 
+    void forgotPassword(ForgotPasswordRequestDto requestDto);
+
+    ApiResponse resetPassword(ResetPasswordRequestDto requestDto);
+
+    ApiResponse changePassword(String username, ChangePasswordRequestDto requestDto);
 }

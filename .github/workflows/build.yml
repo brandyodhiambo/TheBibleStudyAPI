@@ -35,6 +35,9 @@ jobs:
       with:
         gradle-version: wrapper
 
+    - name: Make gradle executable
+      run: chmod +x ./gradlew
+
     - name: Build with Gradle
       run: ./gradlew build
 

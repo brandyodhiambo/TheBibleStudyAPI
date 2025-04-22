@@ -11,6 +11,9 @@ import com.brandyodhiambo.bibleApi.feature.usermgt.models.Users;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.UserSummary;
 import com.brandyodhiambo.bibleApi.feature.usermgt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,7 +127,8 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    @Cacheable(value = "groups", key = "#groupId")
     public GroupResponse getGroup(Long groupId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId.toString()));
@@ -133,11 +137,20 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
+    @Cacheable(value = "allGroups")
     public List<GroupResponse> getAllGroups() {
         return groupRepository.findAll().stream()
                 .map(this::mapToGroupResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "pagedGroups", key = "{#pageable.pageNumber, #pageable.pageSize}")
+    @Override
+    public Page<GroupResponse> getAllGroups(Pageable pageable) {
+        return groupRepository.findAll(pageable)
+                .map(this::mapToGroupResponse);
     }
 
     @Override

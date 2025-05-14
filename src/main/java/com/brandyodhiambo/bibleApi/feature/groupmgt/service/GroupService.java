@@ -3,6 +3,10 @@ package com.brandyodhiambo.bibleApi.feature.groupmgt.service;
 import com.brandyodhiambo.bibleApi.feature.groupmgt.models.dto.CreateGroupRequest;
 import com.brandyodhiambo.bibleApi.feature.groupmgt.models.dto.GroupResponse;
 import com.brandyodhiambo.bibleApi.feature.groupmgt.models.dto.UpdateGroupRequest;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -44,7 +48,11 @@ public interface GroupService {
      * @return a list of all groups
      */
     List<GroupResponse> getAllGroups();
-    
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "pagedGroups", key = "{#pageable.pageNumber, #pageable.pageSize}")
+    Page<GroupResponse> getAllGroups(Pageable pageable);
+
     /**
      * Get all groups led by a user
      * @param username the username of the leader

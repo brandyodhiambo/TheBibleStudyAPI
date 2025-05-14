@@ -11,8 +11,11 @@ public class LoginResponseDto {
     private String email;
     private List<String> role;
     private long expiresIn;
+    private String groupId;
+    private String firstName;
+    private String lastName;
 
-    public LoginResponseDto(String accesstoken, String type, Long id, String username, String email, List<String> role,Long expiresIn) {
+    public LoginResponseDto(String accesstoken, String type, Long id, String username, String email, List<String> role, Long expiresIn, String groupId, String firstName, String lastName) {
         this.token = accesstoken;
         this.type = type;
         this.id = id;
@@ -20,6 +23,9 @@ public class LoginResponseDto {
         this.email = email;
         this.role = role;
         this.expiresIn = expiresIn;
+        this.groupId = groupId;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 
 
@@ -86,5 +92,28 @@ public class LoginResponseDto {
     public void setRole(List<String> role) {
         this.role = role;
     }
-}
 
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+}

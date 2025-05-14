@@ -1,6 +1,8 @@
 package com.brandyodhiambo.bibleApi.feature.usermgt.service.user;
 
 import com.brandyodhiambo.bibleApi.exception.*;
+import com.brandyodhiambo.bibleApi.feature.groupmgt.models.Group;
+import com.brandyodhiambo.bibleApi.feature.groupmgt.repository.GroupRepository;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.*;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.ChangePasswordRequestDto;
 import com.brandyodhiambo.bibleApi.feature.usermgt.models.dto.ForgotPasswordRequestDto;
@@ -51,6 +53,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     AuthenticationManager authenticationManager;
+
+    @Autowired
+    private GroupRepository groupRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -155,6 +160,12 @@ public class UserServiceImpl implements UserService {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+        // Get user's group ID
+        String groupId = "";
+        List<Group> userGroups = groupRepository.findByMember(user);
+        if (!userGroups.isEmpty()) {
+            groupId = userGroups.get(0).getId().toString();
+        }
 
         return new LoginResponseDto(
                 jwt,
@@ -163,7 +174,10 @@ public class UserServiceImpl implements UserService {
                 userDetails.getUsername(),
                 userDetails.getEmail(),
                 roles,
-                jwtService.getExpirationTime()
+                jwtService.getExpirationTime(),
+                groupId,
+                user.getFirstName(),
+                user.getLastName()
         );
     }
 

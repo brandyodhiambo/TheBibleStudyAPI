@@ -1,15 +1,18 @@
 package com.brandyodhiambo.bibleApi.feature.groupmgt.models.dto;
 
 import com.brandyodhiambo.bibleApi.feature.groupmgt.models.GroupType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateGroupRequest {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class UpdateGroupRequest implements Serializable {
 
     private String name;
 

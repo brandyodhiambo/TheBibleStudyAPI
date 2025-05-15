@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -79,5 +82,19 @@ public class RedisConfig {
         builder.withCacheConfiguration("verses", config);
 
         return builder.build();
+    }
+
+    @Bean
+    public CommandLineRunner clearCacheOnStartup(CacheManager cacheManager) {
+        return args -> {
+            // Clear all caches on startup to ensure fresh data is retrieved
+            if (cacheManager != null) {
+                cacheManager.getCacheNames().forEach(cacheName -> {
+                    if (cacheManager.getCache(cacheName) != null) {
+                        cacheManager.getCache(cacheName).clear();
+                    }
+                });
+            }
+        };
     }
 }

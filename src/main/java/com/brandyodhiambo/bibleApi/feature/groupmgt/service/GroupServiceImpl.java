@@ -67,6 +67,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"groups", "allGroups", "pagedGroups"}, key = "#groupId", allEntries = true)
     public GroupResponse updateGroup(Long groupId, UpdateGroupRequest request, String username) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId.toString()));
@@ -109,6 +110,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"groups", "allGroups", "pagedGroups"}, key = "#groupId", allEntries = true)
     public void deleteGroup(Long groupId, String username) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId.toString()));
@@ -132,6 +134,9 @@ public class GroupServiceImpl implements GroupService {
     public GroupResponse getGroup(Long groupId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId.toString()));
+
+        // Force initialization of the members collection to ensure it's fully loaded
+        group.getMembers().size();
 
         return mapToGroupResponse(group);
     }
@@ -175,9 +180,15 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"groups", "allGroups", "pagedGroups"}, key = "#groupId", allEntries = true)
     public GroupResponse addMember(Long groupId, String username, String requesterUsername) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId.toString()));
+
+        // Check if the user exists
+        if (!userRepository.existsByUsername(username)) {
+            throw new ResourceNotFoundException("User", "username", username);
+        }
 
         Users user = userRepository.getUserByName(username);
         Users requester = userRepository.getUserByName(requesterUsername);
@@ -198,11 +209,15 @@ public class GroupServiceImpl implements GroupService {
         group.addMember(user);
         Group updatedGroup = groupRepository.save(group);
 
+        // Evict the cache for this group to ensure fresh data is retrieved next time
+        // This is handled by the @CacheEvict annotation on this method
+
         return mapToGroupResponse(updatedGroup);
     }
 
     @Override
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"groups", "allGroups", "pagedGroups"}, key = "#groupId", allEntries = true)
     public GroupResponse removeMember(Long groupId, String username, String requesterUsername) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId.toString()));
@@ -236,6 +251,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"groups", "allGroups", "pagedGroups"}, key = "#groupId", allEntries = true)
     public GroupResponse joinGroup(Long groupId, String username) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId.toString()));
@@ -255,6 +271,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"groups", "allGroups", "pagedGroups"}, key = "#groupId", allEntries = true)
     public GroupResponse leaveGroup(Long groupId, String username) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", "id", groupId.toString()));
